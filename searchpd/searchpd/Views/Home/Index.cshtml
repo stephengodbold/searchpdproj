@@ -1,15 +1,24 @@
 ﻿@{
-    ViewBag.Title = "Home";
+    ViewBag.Title = "Search";
 }
 
-<h2>Home</h2>
+<h2>Search</h2>
 
-<p>Initial version - empty for now</p>
+<p>
+    Enter a category name, then click outside the input box.
+    The system will show suggestions matching the input.
+</p>
 
-@foreach (var d in ViewBag.datalist)
-{
-    <p>@d.Name</p>
-    
-}
+<div class="input-with-suggestions">
+    <input type="text" class="search" id="search"/>
+    <div class="suggestions" id="suggestions"></div>
+</div>
+
+
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/search")
+
+
+
 
 
