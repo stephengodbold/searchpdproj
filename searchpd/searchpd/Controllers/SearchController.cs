@@ -8,21 +8,28 @@ using System.Web.Http;
 using System.Web;
 using searchpd.Models;
 using searchpd.Search;
+using searchpd.UI;
 
 namespace searchpd.Controllers
 {
     public class SearchController : ApiController
     {
-        private readonly ISearcher _searcher = null;
+        private const string CategoryPageUrl = "/Home/Categories/{0}";
 
-        public SearchController(ISearcher searcher)
+        private readonly ISearcher _searcher = null;
+        private readonly IDisplayFormatter _displayFormatter = null;
+
+        public SearchController(ISearcher searcher, IDisplayFormatter displayFormatter)
         {
             _searcher = searcher;
+            _displayFormatter = displayFormatter;
         }
 
-        // GET api/search/subString
-        public string GetBySubstring(string subString)
+        // GET api/search?q=substring
+        public string GetBySubstring(string q)
         {
+            string subString = q;
+
             IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring(subString);
 
             var html = new StringBuilder();
@@ -31,15 +38,15 @@ namespace searchpd.Controllers
             {
                 html.AppendFormat(@"<div class=""suggestion"">");
 
-                html.AppendFormat(@"<a href=""/Home/Categories/{0}"">{1}</a>",
-                    hierarchy.Category.CategoryID, HttpUtility.HtmlEncode(hierarchy.Category.Name));
+                html.AppendFormat(_displayFormatter.HighlightedAnchor(
+                    hierarchy.Category.Name, subString, CategoryPageUrl, hierarchy.Category.CategoryID));
 
                 if (hierarchy.Parent != null)
                 {
                     html.AppendFormat(" in ");
 
-                    html.AppendFormat(@"<a href=""/Home/Categories/{0}"">{1}</a>",
-                        hierarchy.Parent.CategoryID, HttpUtility.HtmlEncode(hierarchy.Parent.Name));
+                    html.AppendFormat(_displayFormatter.HighlightedAnchor(
+                        hierarchy.Parent.Name, subString, CategoryPageUrl, hierarchy.Parent.CategoryID));
                 }
 
                 html.AppendFormat(@"</div>");

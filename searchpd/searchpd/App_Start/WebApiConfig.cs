@@ -12,7 +12,7 @@ namespace searchpd
             // Make subString into a catch all, because the user may enter a /
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
-                routeTemplate: "api/{controller}/{*subString}",
+                routeTemplate: "api/{controller}/{*escapedSubString}",
                 defaults: new { id = RouteParameter.Optional }
             );
 

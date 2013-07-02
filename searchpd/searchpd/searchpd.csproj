@@ -209,6 +209,8 @@
     <Compile Include="Repositories\CategoryRepository.cs" />
     <Compile Include="Search\AutofacModule.cs" />
     <Compile Include="Search\Searcher.cs" />
+    <Compile Include="UI\AutofacModule.cs" />
+    <Compile Include="UI\DisplayFormatter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -291,7 +293,7 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerPort>32652</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
           <IISUrl>http://localhost:10792/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
