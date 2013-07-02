@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using searchpd.Models;
 
 namespace searchpd.Repositories
@@ -9,6 +7,7 @@ namespace searchpd.Repositories
     public interface ICategoryRepository
     {
         IEnumerable<CategoryHierarchy> GetAllHierarchies();
+        Category GetCategoryById(int categoryId);
     }
 
     public class CategoryRepository : ICategoryRepository
@@ -19,12 +18,10 @@ namespace searchpd.Repositories
         /// <returns></returns>
         public IEnumerable<CategoryHierarchy> GetAllHierarchies()
         {
-            IEnumerable<CategoryHierarchy> hierarchies = null;
-
             using (var context = new searchpdEntities())
             {
                 // This will not return the top most category WEBONLINE, because its 0 ParentID doesn't join with any other category.
-                hierarchies = 
+                IEnumerable<CategoryHierarchy> hierarchies = 
                     (from c in context.Categories
                     join p in context.Categories on c.ParentID equals p.CategoryID
                     select new CategoryHierarchy
@@ -37,9 +34,25 @@ namespace searchpd.Repositories
                         .ToList(); 
 
                 //TODO: Optimise this by using a left join instead
-            }
 
-            return hierarchies;
+                return hierarchies;
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a category given its id, or null if the id does not match a category.
+        /// </summary>
+        /// <param name="categoryId"></param>
+        /// <returns></returns>
+        public Category GetCategoryById(int categoryId)
+        {
+            using (var context = new searchpdEntities())
+            {
+                Category category = context.Categories.Find(categoryId);
+
+                return category;
+            }
         }
     }
 }
