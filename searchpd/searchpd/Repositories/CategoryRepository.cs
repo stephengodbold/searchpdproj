@@ -14,7 +14,7 @@ namespace searchpd.Repositories
     public class CategoryRepository : ICategoryRepository
     {
         /// <summary>
-        /// Gets all category hierarchies from the database.
+        /// Gets all category hierarchies from the database, sorted by parent name, than by category name.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<CategoryHierarchy> GetAllHierarchies()
@@ -31,7 +31,10 @@ namespace searchpd.Repositories
                         {
                             Category = c, 
                             Parent = ((p.ParentID == 0) ? null : p) // see description of CategoryHierachy
-                        }).ToList(); 
+                        })
+                        .OrderBy(c => (c.Parent == null) ? "" : c.Parent.Name)
+                        .ThenBy(c=>c.Category.Name)
+                        .ToList(); 
 
                 //TODO: Optimise this by using a left join instead
             }
