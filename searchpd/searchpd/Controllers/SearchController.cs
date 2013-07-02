@@ -6,28 +6,43 @@ using System.Net.Http;
 using System.Text;
 using System.Web.Http;
 using System.Web;
+using searchpd.Models;
+using searchpd.Search;
 
 namespace searchpd.Controllers
 {
     public class SearchController : ApiController
     {
-        // GET api/search/category
-        public string GetByName(string categoryName)
-        {
-            IEnumerable<Category> matchingCategories = null;
+        private readonly ISearcher _searcher = null;
 
-            using (var context = new searchpdEntities())
-            {
-                matchingCategories =
-                    context.Categories.Where(c => c.Name.StartsWith(categoryName)).ToList();
-            }
+        public SearchController(ISearcher searcher)
+        {
+            _searcher = searcher;
+        }
+
+        // GET api/search/subString
+        public string GetBySubstring(string subString)
+        {
+            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring(subString);
 
             var html = new StringBuilder();
 
-            foreach (Category category in matchingCategories)
+            foreach (CategoryHierarchy hierarchy in hierarchies)
             {
-                html.AppendFormat(@"<a href=""/Home/Categories/{0}"">{1}</a>", 
-                    category.CategoryID, HttpUtility.HtmlEncode(category.Name));
+                html.AppendFormat(@"<div class=""suggestion"">");
+
+                html.AppendFormat(@"<a href=""/Home/Categories/{0}"">{1}</a>",
+                    hierarchy.Category.CategoryID, HttpUtility.HtmlEncode(hierarchy.Category.Name));
+
+                if (hierarchy.Parent != null)
+                {
+                    html.AppendFormat(" in ");
+
+                    html.AppendFormat(@"<a href=""/Home/Categories/{0}"">{1}</a>",
+                        hierarchy.Parent.CategoryID, HttpUtility.HtmlEncode(hierarchy.Parent.Name));
+                }
+
+                html.AppendFormat(@"</div>");
             }
 
             return html.ToString();

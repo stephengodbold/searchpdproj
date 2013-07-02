@@ -17,10 +17,10 @@ namespace searchpd.Tests.Controllers
         public void GetById()
         {
             // Arrange
-            var controller = new SearchController();
+            var controller = new SearchController(null);
 
             // Act
-            string result = controller.GetByName("");
+            string result = controller.GetBySubstring("");
 
             // Assert
             Assert.AreEqual("value", result);

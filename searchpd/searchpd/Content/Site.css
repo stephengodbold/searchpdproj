@@ -1,23 +1,19 @@
 ﻿.input-with-suggestions {
-    width: 300px;
     font: 12px arial,sans-serif;
     line-height: 20px;
 }
 
 .search {
-    width: 100%;
+    width: 300px;
     padding: 4px;
 }
 
 .suggestions {
-    width: 100%;
+    min-width: 300px;
     padding: 4px;
     display: none;
     border: 1px grey solid;
     margin-left: 2px;
 }
 
-.suggestions a {
-    display: block;
-}
 

@@ -9,14 +9,14 @@ namespace searchpd
     {
         public static void Register(HttpConfiguration config)
         {
-            // Make categoryName into a catch all, because a category name may contain a /
+            // Make subString into a catch all, because the user may enter a /
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
-                routeTemplate: "api/{controller}/{*categoryName}",
+                routeTemplate: "api/{controller}/{*subString}",
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            // Get Web API to return JSON by default, rather than XML.
+            // Get Web API to return string by default, rather than XML.
             // Client can still explicitly request XML via request header.
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault(t => t.MediaType == "application/xml");
             config.Formatters.XmlFormatter.SupportedMediaTypes.Remove(appXmlType);
