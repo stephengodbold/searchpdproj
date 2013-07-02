@@ -33,7 +33,7 @@ namespace searchpd.UI
             // Yet we need to find the sub string before doing any escaping.
             // So, first mark the insertion points for the <b> and </b> tags, then escape, then insert the tags.
 
-            int subStringIdx = input.IndexOf(subString, StringComparison.Ordinal);
+            int subStringIdx = input.IndexOf(subString, StringComparison.OrdinalIgnoreCase);
             if (subStringIdx < 0)
             {
                 return input; 
