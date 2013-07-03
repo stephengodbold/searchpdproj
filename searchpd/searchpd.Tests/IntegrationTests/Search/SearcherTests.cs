@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Web;
+using System.Web.Caching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using searchpd.Models;
 using searchpd.Repositories;
@@ -51,7 +54,12 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             // ------------
 
-            _searcher = new Searcher(categoryRepository, null,null);//##################
+            var httpContext = Substitute.For<HttpContextBase>();
+            httpContext.Cache.Returns(HttpRuntime.Cache);
+
+            // ------------
+
+            _searcher = new Searcher(categoryRepository, productRepository, httpContext);
         }
 
         /// <summary>
@@ -66,7 +74,7 @@ namespace searchpd.Tests.IntegrationTests.Search
 
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_InputIsNull_ReturnsEmptyCollection()
+        public void FindSuggestionsBySubstring_InputIsNull_ReturnsEmptyCollection()
         {
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring(null);
@@ -76,7 +84,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_InputIsEmpty_ReturnsEmptyCollection()
+        public void FindSuggestionsBySubstring_InputIsEmpty_ReturnsEmptyCollection()
         {
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("");
@@ -86,7 +94,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_NoMatches_ReturnsEmptyCollection()
+        public void FindSuggestionsBySubstring_NoMatches_ReturnsEmptyCollection()
         {
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("xxyyzz");
@@ -96,7 +104,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_MatchesTopLevelCategoryAtStart_ReturnsCollectionWithThatCategory()
+        public void FindSuggestionsBySubstring_MatchesTopLevelCategoryAtStart_ReturnsCollectionWithThatCategory()
         {
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
@@ -112,7 +120,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_MatchesTopLevelCategoryInMiddleDifferentCase_ReturnsCollectionWithThatCategory()
+        public void FindSuggestionsBySubstring_MatchesTopLevelCategoryInMiddleDifferentCase_ReturnsCollectionWithThatCategory()
         {
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
@@ -127,7 +135,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_MatchesMultipleTopAndMidLevelCategoriesSubstringHasSpace_ReturnsCollectionWithThoseCategories()
+        public void FindSuggestionsBySubstring_MatchesMultipleTopAndMidLevelCategoriesSubstringHasSpace_ReturnsCollectionWithThoseCategories()
         {
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
@@ -145,7 +153,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         }
 
         [TestMethod]
-        public void FindCategoryHierarchiesBySubstring_MatchesMultipleNonTopLevelCategories_ReturnsCollectionWithThoseCategories()
+        public void FindSuggestionsBySubstring_MatchesMultipleNonTopLevelCategories_ReturnsCollectionWithThoseCategories()
         {
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
@@ -157,6 +165,43 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("-ray").ToList();
+
+            // Assert
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
+        }
+
+        [TestMethod]
+        public void FindSuggestionsBySubstring_MatchesOnlyProductCodes_ReturnsCollectionWithThoseSuggestions()
+        {
+            // Arrange
+            IEnumerable<ISuggestion> expectedSuggestions = new List<ISuggestion>
+                {
+                    new ProductSuggestion("Bray8946wk",2),
+                    new ProductSuggestion("Xray8944",1)
+                };
+
+            // Act
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("y894").ToList();
+
+            // Assert
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
+        }
+
+        [TestMethod]
+        public void FindSuggestionsBySubstring_MatchesBothCategorySuggestionsAndProductCodes_ReturnsCollectionWithThoseSuggestions()
+        {
+            // Arrange
+            IEnumerable<ISuggestion> expectedSuggestions = new List<ISuggestion>
+                {
+                    new CategorySuggestion("X-ray gun 12'",100,"Laser weapons",10),
+                    new CategorySuggestion("X-ray gun 15'",101,"Laser weapons",10),
+                    new CategorySuggestion("Gamma-ray gun",200,"Space weapons",20),
+                    new ProductSuggestion("Bray8946wk",2),
+                    new ProductSuggestion("Xray8944",1)
+                };
+
+            // Act
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("ray").ToList();
 
             // Assert
             Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));

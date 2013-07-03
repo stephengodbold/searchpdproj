@@ -109,7 +109,7 @@ namespace searchpd.Search
                     if (data == null)
                     {
                         data = generateData();
-                        _httpContextBase.Cache.Insert(cacheKey, data);
+                        _httpContextBase.Cache[cacheKey] = data;
                     }
                 }
             }
