@@ -24,7 +24,7 @@ namespace searchpd.UI
         /// </returns>
         public string SubstringHighlighted(string input, string subString)
         {
-            if (string.IsNullOrWhiteSpace(subString))
+            if (string.IsNullOrWhiteSpace(input) || string.IsNullOrWhiteSpace(subString))
             {
                 return input;
             }
@@ -36,7 +36,7 @@ namespace searchpd.UI
             int subStringIdx = input.IndexOf(subString, StringComparison.OrdinalIgnoreCase);
             if (subStringIdx < 0)
             {
-                return input; 
+                return HttpUtility.HtmlEncode(input);
             }
 
             const string highlightStartMarker = "\r";

@@ -14,6 +14,7 @@ namespace searchpd.Tests.Controllers
     public class SearchControllerTest
     {
         [TestMethod]
+        [Ignore]
         public void GetById()
         {
             // Arrange
