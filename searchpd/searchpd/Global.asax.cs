@@ -6,6 +6,7 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using Autofac;
 using searchpd.App_Start;
 
 namespace searchpd
@@ -23,7 +24,8 @@ namespace searchpd
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            AutofacConfig.Build();
+            IContainer container = AutofacConfig.Build();
+            SearcherConfig.LoadCaches(container);
         }
     }
 }

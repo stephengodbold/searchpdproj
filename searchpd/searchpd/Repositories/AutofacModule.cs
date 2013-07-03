@@ -6,8 +6,8 @@ namespace searchpd.Repositories
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<CategoryRepository>().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<ProductRepository>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<CategoryRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            builder.RegisterType<ProductRepository>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

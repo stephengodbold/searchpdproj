@@ -6,7 +6,7 @@ namespace searchpd.Search
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<Searcher>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<Searcher>().AsImplementedInterfaces().InstancePerLifetimeScope();
         }
     }
 }

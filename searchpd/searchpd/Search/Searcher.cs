@@ -10,21 +10,26 @@ namespace searchpd.Search
     public interface ISearcher
     {
         IEnumerable<ISuggestion> FindSuggestionsBySubstring(string subString);
-        void LoadSuggestions();
+        void EnsureSuggestions();
+        void RefreshSuggestions();
     }
 
     public class Searcher : ISearcher
     {
-        private static IEnumerable<CategorySuggestion> _allCategorySuggestions = null;
-        private static IEnumerable<ProductSuggestion> _allProductSuggestions = null;
+        private const string CacheKeyCategorySuggestions = "__Searcher_CategorySuggestions";
+        private const string CacheKeyProductSuggestions = "__Searcher_ProductSuggestions";
+        private static readonly object CacheLock = new object();
 
-        private readonly ICategoryRepository _categoryRepository = null;
-        private readonly IProductRepository _productRepository = null;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly HttpContextBase _httpContextBase;
 
-        public Searcher(ICategoryRepository categoryRepository, IProductRepository productRepository)
+        public Searcher(ICategoryRepository categoryRepository, IProductRepository productRepository,
+            HttpContextBase httpContextBase)
         {
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
+            _httpContextBase = httpContextBase;
         }
 
         /// <summary>
@@ -43,17 +48,16 @@ namespace searchpd.Search
 
             // TODO: Not very efficient implementation. To be replaced by something better if it turns out too slow.
 
-            LoadSuggestions();
-            string subStringLC = subString.ToLower();
+            string subStringLc = subString.ToLower();
 
-            var selectedHierarchies = _allCategorySuggestions.Where(s => s.CategoryName.ToLower().Contains(subStringLC));
+            var selectedHierarchies = AllCategorySuggestions().Where(s => s.CategoryName.ToLower().Contains(subStringLc));
 
             var sortedCategorySuggestions = selectedHierarchies
                 .OrderBy(c => (c.HasParent) ? c.ParentName : "")
                 .ThenBy(c => c.CategoryName);
 
-            var selectedProductSuggestions = _allProductSuggestions
-                .Where(p => p.ProductCode.ToLower().Contains(subStringLC));
+            var selectedProductSuggestions = AllProductSuggestions()
+                .Where(p => p.ProductCode.ToLower().Contains(subStringLc));
 
             var sortedProductSuggestions =
                 selectedProductSuggestions.OrderBy(p => p.ProductCode);
@@ -63,17 +67,54 @@ namespace searchpd.Search
             return finalSuggestions;
         }
 
-        public void LoadSuggestions()
+        /// <summary>
+        /// Stores the suggestions in cache if they are not already there.
+        /// </summary>
+        public void EnsureSuggestions()
         {
-            if (_allCategorySuggestions == null)
+            AllCategorySuggestions();
+            AllProductSuggestions();
+        }
+
+        /// <summary>
+        /// Refreshes the suggestion caches from the database.
+        /// </summary>
+        public void RefreshSuggestions()
+        {
+            _httpContextBase.Cache.Remove(CacheKeyCategorySuggestions);
+            _httpContextBase.Cache.Remove(CacheKeyProductSuggestions);
+            EnsureSuggestions();
+        }
+
+        private IEnumerable<CategorySuggestion> AllCategorySuggestions()
+        {
+            return RetrieveFromCache(CacheKeyCategorySuggestions, _categoryRepository.GetAllSuggestions);
+        }
+
+        private IEnumerable<ProductSuggestion> AllProductSuggestions()
+        {
+            return RetrieveFromCache(CacheKeyProductSuggestions, _productRepository.GetAllSuggestions);
+        }
+
+        private T RetrieveFromCache<T>(string cacheKey, Func<T> generateData) where T : class
+        {
+            var data = (T)_httpContextBase.Cache[cacheKey];
+            if (data == null)
             {
-                _allCategorySuggestions = _categoryRepository.GetAllSuggestions();
+                lock (CacheLock)
+                {
+                    // Ensure that the data was not loaded by a concurrent thread 
+                    // while waiting for lock.
+                    data = (T)_httpContextBase.Cache[cacheKey];
+                    if (data == null)
+                    {
+                        data = generateData();
+                        _httpContextBase.Cache.Insert(cacheKey, data);
+                    }
+                }
             }
 
-            if (_allProductSuggestions == null)
-            {
-                _allProductSuggestions = _productRepository.GetAllSuggestions();
-            }
+            return data;
         }
     }
 }

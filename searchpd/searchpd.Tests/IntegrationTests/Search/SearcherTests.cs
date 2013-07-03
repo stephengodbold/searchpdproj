@@ -25,7 +25,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Gamma-ray gun | Space weapons
             // X-ray gun 12' | Laser weapons | Earth weapons
             // X-ray gun 15' | Laser weapons | Earth weapons
-            IEnumerable<CategorySuggestion> fakeDbCategoryHierarchies = new List<CategorySuggestion>
+            IEnumerable<CategorySuggestion> fakeDbCategorySuggestions = new List<CategorySuggestion>
                 {
                     new CategorySuggestion("Gamma-ray gun",200,"Space weapons",20),
                     new CategorySuggestion("X-ray gun 15'",101,"Laser weapons",10),
@@ -36,9 +36,22 @@ namespace searchpd.Tests.IntegrationTests.Search
                 };
 
             var categoryRepository = Substitute.For<ICategoryRepository>();
-            categoryRepository.GetAllSuggestions().ReturnsForAnyArgs(fakeDbCategoryHierarchies); 
+            categoryRepository.GetAllSuggestions().ReturnsForAnyArgs(fakeDbCategorySuggestions);
 
-            _searcher = new Searcher(categoryRepository, null);
+            // ------------
+
+            IEnumerable<ProductSuggestion> fakeDbProductSuggestions = new List<ProductSuggestion>
+                {
+                    new ProductSuggestion("Xray8944",1),
+                    new ProductSuggestion("Bray8946wk",2)
+                };
+
+            var productRepository = Substitute.For<IProductRepository>();
+            productRepository.GetAllSuggestions().ReturnsForAnyArgs(fakeDbProductSuggestions);
+
+            // ------------
+
+            _searcher = new Searcher(categoryRepository, null,null);//##################
         }
 
         /// <summary>

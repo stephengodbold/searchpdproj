@@ -13,7 +13,7 @@ namespace searchpd.App_Start
 {
     public class AutofacConfig
     {
-        public static void Build()
+        public static IContainer Build()
         {
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyModules(Assembly.GetExecutingAssembly());
@@ -21,9 +21,15 @@ namespace searchpd.App_Start
             builder.RegisterControllers(Assembly.GetExecutingAssembly());
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
 
+            builder.Register(c => new HttpContextWrapper(HttpContext.Current))
+                  .As<HttpContextBase>()
+                  .InstancePerLifetimeScope();
+
             var container = builder.Build();
             DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
             GlobalConfiguration.Configuration.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+
+            return container;
         }
     }
 }
