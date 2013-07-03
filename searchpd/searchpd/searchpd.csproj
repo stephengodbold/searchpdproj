@@ -203,7 +203,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Model1.edmx</DependentUpon>
     </Compile>
-    <Compile Include="Models\CategoryHierarchy.cs" />
+    <Compile Include="Models\CategorySuggestion.cs" />
+    <Compile Include="Models\ISuggestion.cs" />
     <Compile Include="Product.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
@@ -212,8 +213,7 @@
     <Compile Include="Repositories\CategoryRepository.cs" />
     <Compile Include="Search\AutofacModule.cs" />
     <Compile Include="Search\Searcher.cs" />
-    <Compile Include="UI\AutofacModule.cs" />
-    <Compile Include="UI\DisplayFormatter.cs" />
+    <Compile Include="Models\DisplayObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />

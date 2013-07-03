@@ -18,7 +18,7 @@ namespace searchpd.Tests.Controllers
         public void GetById()
         {
             // Arrange
-            var controller = new SearchController(null, null);
+            var controller = new SearchController(null);
 
             // Act
             string result = controller.GetBySubstring("");

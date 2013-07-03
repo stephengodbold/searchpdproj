@@ -3,15 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace searchpd.UI
+namespace searchpd.Models
 {
-    public interface IDisplayFormatter
-    {
-        string SubstringHighlighted(string input, string subString);
-        string HighlightedAnchor(string linkName, string subString, string urlFormat, params Object[] urlParams);
-    }
-
-    public class DisplayFormatter : IDisplayFormatter
+    public class DisplayObject
     {
         /// <summary>
         /// 1) escapes all html in the given input string

@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using searchpd.UI;
+using searchpd.Models;
 
 namespace searchpd.Tests.UnitTests.UI
 {
     [TestClass]
     public class DisplayFormatterTests
     {
-        private IDisplayFormatter _displayFormatter;
+        private DisplayObject _displayObject;
 
         /// <summary>
         ///Initialize() is called once during test execution before
@@ -20,7 +20,7 @@ namespace searchpd.Tests.UnitTests.UI
         [TestInitialize()]
         public void Initialize()
         {
-            _displayFormatter = new DisplayFormatter();
+            _displayObject = new DisplayObject();
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_InputIsNull_ReturnsNull()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted(null, "xyz");
+            string result = _displayObject.SubstringHighlighted(null, "xyz");
 
             // Assert
             Assert.AreEqual(null, result);
@@ -48,7 +48,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_InputIsEmpty_ReturnsEmpty()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("", "xyz");
+            string result = _displayObject.SubstringHighlighted("", "xyz");
 
             // Assert
             Assert.AreEqual("", result);
@@ -58,7 +58,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_NoMatchNoHtml_ReturnsInput()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcdefg", "xyz");
+            string result = _displayObject.SubstringHighlighted("abcdefg", "xyz");
 
             // Assert
             Assert.AreEqual("abcdefg", result);
@@ -68,7 +68,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_NoMatchHasHtml_ReturnsEscapedInput()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("a<b>c&defg", "xyz");
+            string result = _displayObject.SubstringHighlighted("a<b>c&defg", "xyz");
 
             // Assert
             Assert.AreEqual("a&lt;b&gt;c&amp;defg", result);
@@ -78,7 +78,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchAtStartNoHtml_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcdefg", "abc");
+            string result = _displayObject.SubstringHighlighted("abcdefg", "abc");
 
             // Assert
             Assert.AreEqual("<b>abc</b>defg", result);
@@ -88,7 +88,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchAtEndNoHtml_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcdefg", "efg");
+            string result = _displayObject.SubstringHighlighted("abcdefg", "efg");
 
             // Assert
             Assert.AreEqual("abcd<b>efg</b>", result);
@@ -98,7 +98,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchInMiddleNoHtml_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcdefg", "def");
+            string result = _displayObject.SubstringHighlighted("abcdefg", "def");
 
             // Assert
             Assert.AreEqual("abc<b>def</b>g", result);
@@ -108,7 +108,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchHasHtmlOutsideMatch_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("a<b>cdefg", "def");
+            string result = _displayObject.SubstringHighlighted("a<b>cdefg", "def");
 
             // Assert
             Assert.AreEqual("a&lt;b&gt;c<b>def</b>g", result);
@@ -118,7 +118,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchHasHtmlInsideMatch_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcd&efg", "d&ef");
+            string result = _displayObject.SubstringHighlighted("abcd&efg", "d&ef");
 
             // Assert
             Assert.AreEqual("abc<b>d&amp;ef</b>g", result);
@@ -128,7 +128,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchHasHtmlInsideMatchAtStart_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcd&efg", "&ef");
+            string result = _displayObject.SubstringHighlighted("abcd&efg", "&ef");
 
             // Assert
             Assert.AreEqual("abcd<b>&amp;ef</b>g", result);
@@ -138,7 +138,7 @@ namespace searchpd.Tests.UnitTests.UI
         public void SubstringHighlighted_HasMatchHasHtmlInsideMatchAtEnd_ReturnsInputWithHighlightedSubstring()
         {
             // Act
-            string result = _displayFormatter.SubstringHighlighted("abcdef&g", "ef&");
+            string result = _displayObject.SubstringHighlighted("abcdef&g", "ef&");
 
             // Assert
             Assert.AreEqual("abcd<b>ef&amp;</b>g", result);

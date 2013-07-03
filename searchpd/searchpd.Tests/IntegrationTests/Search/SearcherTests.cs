@@ -5,7 +5,6 @@ using searchpd.Repositories;
 using searchpd.Search;
 using NSubstitute;
 using System.Linq;
-using searchpd.Tests.ExtensionMethods;
 
 namespace searchpd.Tests.IntegrationTests.Search
 {
@@ -26,38 +25,14 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Gamma-ray gun | Space weapons
             // X-ray gun 12' | Laser weapons | Earth weapons
             // X-ray gun 15' | Laser weapons | Earth weapons
-            IEnumerable<CategoryHierarchy> fakeDbCategoryHierarchies = new List<CategoryHierarchy>
+            IEnumerable<CategorySuggestion> fakeDbCategoryHierarchies = new List<CategorySuggestion>
                 {
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 200, Name = "Gamma-ray gun" },
-                            Parent = new Category { CategoryID = 20, ParentID = 1, Name = "Space weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 101, Name = "X-ray gun 15'" },
-                            Parent = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 100, Name = "X-ray gun 12'" },
-                            Parent = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 20, ParentID = 1, Name = "Space weapons" },
-                            Parent = null
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" },
-                            Parent = new Category { CategoryID = 2, ParentID = 1, Name = "Earth weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 1, Name = "Earth weapons" },
-                            Parent = null
-                        }
+                    CategorySuggestion.Create("Gamma-ray gun",200,"Space weapons",20),
+                    CategorySuggestion.Create("X-ray gun 15'",101,"Laser weapons",10),
+                    CategorySuggestion.Create("X-ray gun 12'",100,"Laser weapons",10),
+                    CategorySuggestion.Create("Space weapons",20,null,0),
+                    CategorySuggestion.Create("Laser weapons",10,"Earth weapons" ,2),
+                    CategorySuggestion.Create("Earth weapons",10,null,0)
                 };
 
             var categoryRepository = Substitute.For<ICategoryRepository>();
@@ -81,130 +56,97 @@ namespace searchpd.Tests.IntegrationTests.Search
         public void FindCategoryHierarchiesBySubstring_InputIsNull_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring(null);
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring(null);
 
             // Assert
-            Assert.AreEqual(0, hierarchies.Count());
+            Assert.AreEqual(0, suggestions.Count());
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_InputIsEmpty_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring("");
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("");
 
             // Assert
-            Assert.AreEqual(0, hierarchies.Count());
+            Assert.AreEqual(0, suggestions.Count());
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_NoMatches_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring("xxyyzz");
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("xxyyzz");
 
             // Assert
-            Assert.AreEqual(0, hierarchies.Count());
+            Assert.AreEqual(0, suggestions.Count());
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_MatchesTopLevelCategoryAtStart_ReturnsCollectionWithThatCategory()
         {
             // Arrange
-            IEnumerable<CategoryHierarchy> expectedHierarchies = new List<CategoryHierarchy>
+            IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 1, Name = "Earth weapons" },
-                            Parent = null
-                        }
+                    CategorySuggestion.Create("Earth weapons",10,null,0)
                 };
 
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring("Earth").ToList();
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("Earth").ToList();
 
             // Assert
-            Assert.IsTrue(expectedHierarchies.EqualTo(hierarchies));
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_MatchesTopLevelCategoryInMiddleDifferentCase_ReturnsCollectionWithThatCategory()
         {
             // Arrange
-            IEnumerable<CategoryHierarchy> expectedHierarchies = new List<CategoryHierarchy>
+            IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 1, Name = "Earth weapons" },
-                            Parent = null
-                        }
+                    CategorySuggestion.Create("Earth weapons",10,null,0)
                 };
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring("Arth").ToList();
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("Arth").ToList();
 
             // Assert
-            Assert.IsTrue(expectedHierarchies.EqualTo(hierarchies));
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_MatchesMultipleTopAndMidLevelCategoriesSubstringHasSpace_ReturnsCollectionWithThoseCategories()
         {
             // Arrange
-            IEnumerable<CategoryHierarchy> expectedHierarchies = new List<CategoryHierarchy>
+            IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 1, Name = "Earth weapons" },
-                            Parent = null
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 20, ParentID = 1, Name = "Space weapons" },
-                            Parent = null
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" },
-                            Parent = new Category { CategoryID = 2, ParentID = 1, Name = "Earth weapons" }
-                        }
+                    CategorySuggestion.Create("Earth weapons",10,null,0),
+                    CategorySuggestion.Create("Space weapons",20,null,0),
+                    CategorySuggestion.Create("Laser weapons",10,"Earth weapons" ,2)
                 };
             
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring(" weapo").ToList();
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring(" weapo").ToList();
 
             // Assert
-            Assert.IsTrue(expectedHierarchies.EqualTo(hierarchies));
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
         }
 
         [TestMethod]
         public void FindCategoryHierarchiesBySubstring_MatchesMultipleNonTopLevelCategories_ReturnsCollectionWithThoseCategories()
         {
             // Arrange
-            IEnumerable<CategoryHierarchy> expectedHierarchies = new List<CategoryHierarchy>
+            IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 100, Name = "X-ray gun 12'" },
-                            Parent = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 101, Name = "X-ray gun 15'" },
-                            Parent = new Category { CategoryID = 10, ParentID = 2, Name = "Laser weapons" }
-                        },
-                    new CategoryHierarchy
-                        {
-                            Category = new Category { CategoryID = 200, Name = "Gamma-ray gun" },
-                            Parent = new Category { CategoryID = 20, ParentID = 1, Name = "Space weapons" }
-                        }
+                    CategorySuggestion.Create("X-ray gun 12'",100,"Laser weapons",10),
+                    CategorySuggestion.Create("X-ray gun 15'",101,"Laser weapons",10),
+                    CategorySuggestion.Create("Gamma-ray gun",200,"Space weapons",20)
                 };
 
             // Act
-            IEnumerable<CategoryHierarchy> hierarchies = _searcher.FindCategoryHierarchiesBySubstring("-ray").ToList();
+            IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("-ray").ToList();
 
             // Assert
-            bool equal = expectedHierarchies.EqualTo(hierarchies);
-            Assert.IsTrue(equal);
+            Assert.IsTrue(expectedSuggestions.SequenceEqual(suggestions));
         }
     }
 }
