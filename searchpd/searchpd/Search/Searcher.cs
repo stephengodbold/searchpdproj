@@ -10,18 +10,21 @@ namespace searchpd.Search
     public interface ISearcher
     {
         IEnumerable<ISuggestion> FindSuggestionsBySubstring(string subString);
-        void LoadCategoryHierarchies();
+        void LoadSuggestions();
     }
 
     public class Searcher : ISearcher
     {
-        private static IEnumerable<CategorySuggestion> _allHierarchies = null;
+        private static IEnumerable<CategorySuggestion> _allCategorySuggestions = null;
+        private static IEnumerable<ProductSuggestion> _allProductSuggestions = null;
 
         private readonly ICategoryRepository _categoryRepository = null;
+        private readonly IProductRepository _productRepository = null;
 
-        public Searcher(ICategoryRepository categoryRepository)
+        public Searcher(ICategoryRepository categoryRepository, IProductRepository productRepository)
         {
             _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         /// <summary>
@@ -38,24 +41,38 @@ namespace searchpd.Search
                 return new List<CategorySuggestion>();
             }
 
-            // TODO: EXTREMELY INEFFICIENT IMPLEMENTATION
-            // Will be replace by Lucene based code.
-            LoadCategoryHierarchies();
-            string subStringLC = subString.ToLower();
-            var selectedHierarchies = _allHierarchies.Where(s => s.CategoryName.ToLower().Contains(subStringLC));
+            // TODO: Not very efficient implementation. To be replaced by something better if it turns out too slow.
 
-            var sortedHierarchies = selectedHierarchies
+            LoadSuggestions();
+            string subStringLC = subString.ToLower();
+
+            var selectedHierarchies = _allCategorySuggestions.Where(s => s.CategoryName.ToLower().Contains(subStringLC));
+
+            var sortedCategorySuggestions = selectedHierarchies
                 .OrderBy(c => (c.HasParent) ? c.ParentName : "")
                 .ThenBy(c => c.CategoryName);
 
-            return sortedHierarchies;
+            var selectedProductSuggestions = _allProductSuggestions
+                .Where(p => p.ProductCode.ToLower().Contains(subStringLC));
+
+            var sortedProductSuggestions =
+                selectedProductSuggestions.OrderBy(p => p.ProductCode);
+
+            var finalSuggestions = sortedCategorySuggestions.Union<ISuggestion>(sortedProductSuggestions).ToList();
+
+            return finalSuggestions;
         }
 
-        public void LoadCategoryHierarchies()
+        public void LoadSuggestions()
         {
-            if (_allHierarchies == null)
+            if (_allCategorySuggestions == null)
             {
-                _allHierarchies = _categoryRepository.GetAllHierarchies();
+                _allCategorySuggestions = _categoryRepository.GetAllSuggestions();
+            }
+
+            if (_allProductSuggestions == null)
+            {
+                _allProductSuggestions = _productRepository.GetAllSuggestions();
             }
         }
     }

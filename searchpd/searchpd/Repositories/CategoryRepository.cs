@@ -6,29 +6,37 @@ namespace searchpd.Repositories
 {
     public interface ICategoryRepository
     {
-        IEnumerable<CategorySuggestion> GetAllHierarchies();
+        IEnumerable<CategorySuggestion> GetAllSuggestions();
         Category GetCategoryById(int categoryId);
     }
 
     public class CategoryRepository : ICategoryRepository
     {
         /// <summary>
-        /// Gets all category hierarchies from the database.
+        /// Gets all category suggestions from the database.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<CategorySuggestion> GetAllHierarchies()
+        public IEnumerable<CategorySuggestion> GetAllSuggestions()
         {
             using (var context = new searchpdEntities())
             {
                 // This will not return the top most category WEBONLINE, because its 0 ParentID doesn't join with any other category.
-                IEnumerable<CategorySuggestion> hierarchies = 
-                    (from c in context.Categories
-                    join p in context.Categories on c.ParentID equals p.CategoryID
-                    select CategorySuggestion.Create(c.Name, c.CategoryID, (p.ParentID == 0) ? null : p.Name, p.CategoryID)).ToList(); 
+                IEnumerable<CategorySuggestion> suggestions =
+                    context.Categories.Join(
+                        context.Categories,
+                        c => c.ParentID,
+                        p => p.CategoryID,
+                        (c, p) => new CategorySuggestion
+                            {
+                                CategoryName = c.Name,
+                                CategoryId = c.CategoryID,
+                                ParentName = (p.ParentID == 0) ? null : p.Name,
+                                ParentId = p.ParentID
+                            }).ToList();
 
                 //TODO: Optimise this by using a left join instead
 
-                return hierarchies;
+                return suggestions;
             }
         }
 

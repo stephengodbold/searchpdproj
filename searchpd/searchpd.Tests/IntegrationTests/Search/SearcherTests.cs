@@ -27,18 +27,18 @@ namespace searchpd.Tests.IntegrationTests.Search
             // X-ray gun 15' | Laser weapons | Earth weapons
             IEnumerable<CategorySuggestion> fakeDbCategoryHierarchies = new List<CategorySuggestion>
                 {
-                    CategorySuggestion.Create("Gamma-ray gun",200,"Space weapons",20),
-                    CategorySuggestion.Create("X-ray gun 15'",101,"Laser weapons",10),
-                    CategorySuggestion.Create("X-ray gun 12'",100,"Laser weapons",10),
-                    CategorySuggestion.Create("Space weapons",20,null,0),
-                    CategorySuggestion.Create("Laser weapons",10,"Earth weapons" ,2),
-                    CategorySuggestion.Create("Earth weapons",10,null,0)
+                    new CategorySuggestion("Gamma-ray gun",200,"Space weapons",20),
+                    new CategorySuggestion("X-ray gun 15'",101,"Laser weapons",10),
+                    new CategorySuggestion("X-ray gun 12'",100,"Laser weapons",10),
+                    new CategorySuggestion("Space weapons",20,null,0),
+                    new CategorySuggestion("Laser weapons",10,"Earth weapons" ,2),
+                    new CategorySuggestion("Earth weapons",10,null,0)
                 };
 
             var categoryRepository = Substitute.For<ICategoryRepository>();
-            categoryRepository.GetAllHierarchies().ReturnsForAnyArgs(fakeDbCategoryHierarchies); 
+            categoryRepository.GetAllSuggestions().ReturnsForAnyArgs(fakeDbCategoryHierarchies); 
 
-            _searcher = new Searcher(categoryRepository);
+            _searcher = new Searcher(categoryRepository, null);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    CategorySuggestion.Create("Earth weapons",10,null,0)
+                    new CategorySuggestion("Earth weapons",10,null,0)
                 };
 
             // Act
@@ -104,7 +104,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    CategorySuggestion.Create("Earth weapons",10,null,0)
+                    new CategorySuggestion("Earth weapons",10,null,0)
                 };
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("Arth").ToList();
@@ -119,9 +119,9 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    CategorySuggestion.Create("Earth weapons",10,null,0),
-                    CategorySuggestion.Create("Space weapons",20,null,0),
-                    CategorySuggestion.Create("Laser weapons",10,"Earth weapons" ,2)
+                    new CategorySuggestion("Earth weapons",10,null,0),
+                    new CategorySuggestion("Space weapons",20,null,0),
+                    new CategorySuggestion("Laser weapons",10,"Earth weapons" ,2)
                 };
             
             // Act
@@ -137,9 +137,9 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    CategorySuggestion.Create("X-ray gun 12'",100,"Laser weapons",10),
-                    CategorySuggestion.Create("X-ray gun 15'",101,"Laser weapons",10),
-                    CategorySuggestion.Create("Gamma-ray gun",200,"Space weapons",20)
+                    new CategorySuggestion("X-ray gun 12'",100,"Laser weapons",10),
+                    new CategorySuggestion("X-ray gun 15'",101,"Laser weapons",10),
+                    new CategorySuggestion("Gamma-ray gun",200,"Space weapons",20)
                 };
 
             // Act

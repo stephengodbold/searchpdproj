@@ -19,15 +19,27 @@ namespace searchpd.Models
     {
         private const string CategoryPageUrl = "/Home/Categories/{0}";
 
-        public string CategoryName { get; private set; }
-        public int CategoryId { get; private set; }
-        
+        public string CategoryName { get; set; }
+        public int CategoryId { get; set; } // Be sure never to update this after object creation, it is used as the hash code.
+
         // "Parent" refers to the parent category of this category.
         // If there is no parent, ParentName will be null
-        public string ParentName { get; private set; }
-        public int ParentId { get; private set; }
+        public string ParentName { get; set; }
+        public int ParentId { get; set; }
 
         public bool HasParent { get { return (ParentName != null); } }
+
+        public CategorySuggestion()
+        {
+        }
+
+        public CategorySuggestion(string categoryName, int categoryId, string parentName, int parentId)
+        {
+            CategoryName = categoryName;
+            CategoryId = categoryId;
+            ParentId = parentId;
+            ParentName = parentName;
+        }
 
         /// <summary>
         /// Returns the html representation of a category suggestion
@@ -49,25 +61,6 @@ namespace searchpd.Models
             }
 
             return html.ToString();
-        }
-
-        /// <summary>
-        /// Factory to create a new CategorySuggestion.
-        /// </summary>
-        /// <param name="categoryName"></param>
-        /// <param name="categoryId"></param>
-        /// <param name="parentName"></param>
-        /// <param name="parentId"></param>
-        /// <returns></returns>
-        public static CategorySuggestion Create(string categoryName, int categoryId, string parentName, int parentId)
-        {
-            return new CategorySuggestion
-                {
-                    CategoryName = categoryName,
-                    CategoryId = categoryId,
-                    ParentId = parentId,
-                    ParentName = parentName
-                };
         }
 
         /// <summary>
@@ -94,7 +87,7 @@ namespace searchpd.Models
 
         public override int GetHashCode()
         {
-            return CategoryId;
+            return 23 * CategoryId.GetHashCode();
         }
     }
 }

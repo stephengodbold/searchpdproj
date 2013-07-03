@@ -7,6 +7,7 @@ namespace searchpd.Repositories
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<CategoryRepository>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<ProductRepository>().AsImplementedInterfaces().SingleInstance();
         }
     }
 }

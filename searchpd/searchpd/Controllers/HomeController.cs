@@ -10,10 +10,12 @@ namespace searchpd.Controllers
     public class HomeController : Controller
     {
         private readonly ICategoryRepository _categoryRepository = null;
+        private readonly IProductRepository _productRepository = null;
 
-        public HomeController(ICategoryRepository categoryRepository)
+        public HomeController(ICategoryRepository categoryRepository, IProductRepository productRepository)
         {
             _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         public ActionResult Index()
@@ -25,6 +27,15 @@ namespace searchpd.Controllers
         {
             Category category = _categoryRepository.GetCategoryById(id);
             ViewBag.CategoryName = (category == null) ? "Unkown" : category.Name;
+
+            return View();
+        }
+
+        public ActionResult Products(int id)
+        {
+            Product product = _productRepository.GetProductById(id);
+            ViewBag.ProductDescription = (product == null) ? "Unkown" : product.Description;
+            ViewBag.ProductCode = (product == null) ? "Unkown" : product.Code;
 
             return View();
         }
