@@ -29,8 +29,6 @@ namespace searchpd.Repositories
                             Category = c, 
                             Parent = ((p.ParentID == 0) ? null : p) // see description of CategoryHierachy
                         })
-                        .OrderBy(c => (c.Parent == null) ? "" : c.Parent.Name)
-                        .ThenBy(c=>c.Category.Name)
                         .ToList(); 
 
                 //TODO: Optimise this by using a left join instead

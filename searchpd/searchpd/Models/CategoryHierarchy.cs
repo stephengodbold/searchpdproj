@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace searchpd.Models
+﻿namespace searchpd.Models
 {
     /// <summary>
     /// Represents a category and its parent.
