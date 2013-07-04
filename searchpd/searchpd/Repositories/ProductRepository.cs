@@ -7,13 +7,14 @@ namespace searchpd.Repositories
     public interface IProductRepository
     {
         IEnumerable<ProductSuggestion> GetAllSuggestions();
+        IEnumerable<ProductSearchResult> GetAllProductSearchResults();
         Product GetProductById(int productId);
     }
 
     public class ProductRepository : IProductRepository
     {
         /// <summary>
-        /// Gets all category hierarchies from the database.
+        /// Gets all product suggestions from the database.
         /// </summary>
         /// <returns></returns>
         public IEnumerable<ProductSuggestion> GetAllSuggestions()
@@ -27,6 +28,29 @@ namespace searchpd.Repositories
                     }).ToList();
 
                 return suggestions;
+            }
+        }
+
+        /// <summary>
+        /// Gets all product search results from the database.
+        /// 
+        /// This simply retrieves all Products from the database and returns them as
+        /// ProductSearchResults.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<ProductSearchResult> GetAllProductSearchResults()
+        {
+            using (var context = new searchpdEntities())
+            {
+                IEnumerable<ProductSearchResult> results =
+                    context.Products.Select(p => new ProductSearchResult
+                    {
+                        ProductDescription = p.Description,
+                        ProductCode = p.Code,
+                        ProductId = p.ProductID
+                    }).ToList();
+
+                return results;
             }
         }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Autofac;
 using Autofac.Core;
+using main.Models;
 using searchpd.Search;
 
 namespace main.App_Start
@@ -23,8 +24,10 @@ namespace main.App_Start
 
             using (var scope = container.BeginLifetimeScope())
             {
-                var searcher = scope.Resolve<ISearcher>();
-                // TODO: add loading of caches for product search here.
+                var constants = scope.Resolve<IConstants>();
+
+                var searcher = scope.Resolve<IProductSearcher>();
+                searcher.LoadProductStore(constants.LucenePath, constants.ProductCodeBoost);
             }
         }
     }

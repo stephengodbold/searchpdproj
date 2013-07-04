@@ -11,13 +11,16 @@
 </p>
 <div class="input-with-suggestions">
     <input type="text" class="search" id="search"/>
+    <button id="search-button">Search</button>
     
     @*Using a table instead of a div, so the suggestions box visually grows when you get long category lines*@
-    <table border="0" cellpadding="0" cellspacing="0">
+    <table border="0" cellpadding="0" cellspacing="0" class="suggestions-box">
         <tr><td class="suggestions" id="suggestions">
-        </td></tr>
+            </td></tr>
     </table>
 </div>
+
+<div id="searchresults" class="searchresults"></div>
 
 @section Scripts {
 

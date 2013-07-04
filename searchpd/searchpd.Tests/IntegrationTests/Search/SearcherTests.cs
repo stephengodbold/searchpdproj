@@ -14,7 +14,7 @@ namespace searchpd.Tests.IntegrationTests.Search
     [TestClass]
     public class SearcherTests
     {
-        private ISearcher _searcher;
+        private ISuggestionSearcher _searcher;
 
         /// <summary>
         ///Initialize() is called once during test execution before
@@ -59,7 +59,7 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             // ------------
 
-            _searcher = new Searcher(categoryRepository, productRepository, httpContext);
+            _searcher = new SuggestionSearcher(categoryRepository, productRepository, httpContext);
         }
 
         /// <summary>

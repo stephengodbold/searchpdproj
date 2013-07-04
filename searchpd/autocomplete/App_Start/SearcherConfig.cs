@@ -23,7 +23,7 @@ namespace autocomplete.App_Start
 
             using (var scope = container.BeginLifetimeScope())
             {
-                var searcher = scope.Resolve<ISearcher>();
+                var searcher = scope.Resolve<ISuggestionSearcher>();
                 searcher.EnsureSuggestions();
             }
         }

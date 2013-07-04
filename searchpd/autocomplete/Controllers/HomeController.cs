@@ -14,9 +14,9 @@ namespace main.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ISearcher _searcher = null;
+        private readonly ISuggestionSearcher _searcher = null;
 
-        public HomeController(ISearcher searcher)
+        public HomeController(ISuggestionSearcher searcher)
         {
             _searcher = searcher;
         }

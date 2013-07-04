@@ -11,9 +11,9 @@ namespace autocomplete.Controllers
 {
     public class SuggestionsController : Controller
     {
-        private readonly ISearcher _searcher = null;
+        private readonly ISuggestionSearcher _searcher = null;
 
-        public SuggestionsController(ISearcher searcher)
+        public SuggestionsController(ISuggestionSearcher searcher)
         {
             _searcher = searcher;
         }

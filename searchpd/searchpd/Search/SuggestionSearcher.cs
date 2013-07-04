@@ -7,14 +7,14 @@ using searchpd.Repositories;
 
 namespace searchpd.Search
 {
-    public interface ISearcher
+    public interface ISuggestionSearcher
     {
         IEnumerable<ISuggestion> FindSuggestionsBySubstring(string subString);
         void EnsureSuggestions();
         void RefreshSuggestions();
     }
 
-    public class Searcher : ISearcher
+    public class SuggestionSearcher : ISuggestionSearcher
     {
         private const string CacheKeyCategorySuggestions = "__Searcher_CategorySuggestions";
         private const string CacheKeyProductSuggestions = "__Searcher_ProductSuggestions";
@@ -24,7 +24,7 @@ namespace searchpd.Search
         private readonly IProductRepository _productRepository;
         private readonly HttpContextBase _httpContextBase;
 
-        public Searcher(ICategoryRepository categoryRepository, IProductRepository productRepository,
+        public SuggestionSearcher(ICategoryRepository categoryRepository, IProductRepository productRepository,
             HttpContextBase httpContextBase)
         {
             _categoryRepository = categoryRepository;

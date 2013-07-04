@@ -1,6 +1,7 @@
 ﻿.input-with-suggestions {
     font: 12px arial,sans-serif;
     line-height: 20px;
+    position: relative;
 }
 
 .search {
@@ -14,6 +15,17 @@
     display: none;
     border: 1px grey solid;
     margin-left: 2px;
+}
+
+.suggestions-box {
+    position: absolute;
+    top: 35px;
+    background-color: white;
+}
+
+.searchresults {
+    font: 12px arial,sans-serif;
+    line-height: 20px;
 }
 
 .progress {

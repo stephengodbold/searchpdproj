@@ -8,7 +8,8 @@ namespace main
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/search").Include(
-                        "~/Scripts/custom/search.js"));
+                        "~/Scripts/custom/search.js").Include(
+                        "~/Scripts/custom/productsearch.js"));
 
             bundles.Add(new ScriptBundle("~/bundles/refresh").Include(
                         "~/Scripts/custom/refresh.js"));

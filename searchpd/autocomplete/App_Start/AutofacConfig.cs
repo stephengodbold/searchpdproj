@@ -18,7 +18,7 @@ namespace autocomplete.App_Start
         {
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyModules(Assembly.GetExecutingAssembly());
-            builder.RegisterAssemblyModules(typeof(Searcher).Assembly);
+            builder.RegisterAssemblyModules(typeof(SuggestionSearcher).Assembly);
 
             builder.RegisterControllers(Assembly.GetExecutingAssembly());
             builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
