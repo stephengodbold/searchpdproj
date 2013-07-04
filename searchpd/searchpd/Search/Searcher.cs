@@ -47,6 +47,9 @@ namespace searchpd.Search
             }
 
             // TODO: Not very efficient implementation. To be replaced by something better if it turns out too slow.
+            // A simple way to speed this up would be by caching search results, with relatively low priority (so they
+            // get scavenged first). This would probably work because the site probably has a relative small number of 
+            // tradies doing the same searches repeatedly.
 
             string subStringLc = subString.ToLower();
 
