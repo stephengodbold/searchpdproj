@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "Admin";
+}
+
+<h2>Admin</h2>
+<p>
+    Click button after product or category data has been updated in the database.
+    This will refresh the autocomplete suggestions.
+</p>
+
+<form name="refresh" action="@(ViewBag.AutocompleteRefreshApiUrl)" method="post">
+    <input type="submit" id="refresh" value="Refresh" ></input>
+    <span id="progress" class="progress">refreshing ...</span>
+</form>
+
+@section Scripts {
+
+    @Scripts.Render("~/bundles/jquery")
+    
+    <script type="text/javascript">
+        $(function() {
+            $("#progress").hide();
+            $("#refresh").click(function() {
+                $("#progress").show();
+              //  $("#refresh").attr('disabled', 'disabled');
+            });
+        });
+    </script>
+}
+
+
+

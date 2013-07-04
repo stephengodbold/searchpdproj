@@ -9,6 +9,7 @@ namespace main.Models
     public interface IConstants
     {
         string AutocompleteSearchApiUrl { get; }
+        string AutocompleteRefreshApiUrl { get; }
     }
 
     public class Constants : IConstants
@@ -16,6 +17,11 @@ namespace main.Models
         public string AutocompleteSearchApiUrl
         {
             get { return ConfigurationManager.AppSettings["AutocompleteSearchApiUrl"]; }
+        }
+
+        public string AutocompleteRefreshApiUrl
+        {
+            get { return ConfigurationManager.AppSettings["AutocompleteRefreshApiUrl"]; }
         }
     }
 }

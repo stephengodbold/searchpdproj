@@ -24,16 +24,6 @@
         // If server sends data, this goes in the suggestion box. If not, ensure suggestions are invisible.
         // Use a query string rather than adding the sub string to the uri as a rest item, because if you do
         // the latter the MVC framework will throw an exception when you send unsafe characters such as %.
-        //$.get(Searcher.searchUrl + "?q=" + escape(subString), function (data, status) {
-        //    if (data) {
-        //        $("#suggestions").show().html(data);
-        //    } else {
-        //        $("#suggestions").hide();
-        //    }
-        //}, 'jsonp');
-
-
-
         $.ajax({
             url: Searcher.searchUrl + "?q=" + escape(subString),
             dataType: 'jsonp',
@@ -42,10 +32,6 @@
                 alert(error);
             }
         });
-
-
-
-
 
         return true;
     };

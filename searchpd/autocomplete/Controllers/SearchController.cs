@@ -21,7 +21,7 @@ namespace main.Controllers
             _searcher = searcher;
         }
 
-        // GET api/search?q=substring&callback=<jsonp callback function>
+        // GET api/search?q=substring
         public string GetBySubstring(string q)
         {
             string subString = q;

@@ -16,4 +16,6 @@
     margin-left: 2px;
 }
 
-
+.progress {
+    display: none;
+}
