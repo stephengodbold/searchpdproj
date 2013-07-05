@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace searchpd.Search
 {
     public interface IProductSearcher
     {
-        IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm);
+        IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm, int skip, int take, out int totalHits);
         void LoadProductStore(string absoluteLucenePath, float productCodeBoost);
         void RefreshProductStore();
     }
@@ -44,9 +45,20 @@ namespace searchpd.Search
         /// Returns the products in order of relevancy, most relevant first.
         /// </summary>
         /// <param name="searchTerm"></param>
+        /// <param name="skip">
+        /// The first "skip" results will be skipped (not returned).
+        /// </param>
+        /// <param name="take">
+        /// The first take results after the skip results will be returned, or less if fewer available.
+        /// </param>
+        /// <param name="totalHits">
+        /// Total number of hits produced by the query.
+        /// </param>
         /// <returns></returns>
-        public IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm)
+        public IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm, int skip, int take, out int totalHits)
         {
+            totalHits = 0;
+
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return new List<ProductSearchResult>();
@@ -64,18 +76,23 @@ namespace searchpd.Search
             booleanQuery.Add(query2, Occur.SHOULD);
 
             // Actual search
-            TopDocs hits = _searcher.Search(booleanQuery, _searcher.MaxDoc);
+
+            int maxWanted = Math.Min(skip + take, _searcher.MaxDoc);
+            TopDocs hits = _searcher.Search(booleanQuery, maxWanted);
+
+            totalHits = hits.TotalHits;
 
             // Return results. ScoreDocs is already sorted by relevancy desc.
-            var sortedResults = hits
-                .ScoreDocs
+            var sortedResults = hits.ScoreDocs
+                .Skip(skip)
+                .Take(maxWanted - skip)
                 .Select(d =>
                     {
                         var doc = _searcher.Doc(d.Doc);
                         return new ProductSearchResult
                             {
                                 ProductId = int.Parse(doc.Get("ProductId")),
-                                ProductCode = doc.Get("ProductCode"),
+                                ProductCode = doc.Get("ProductCode").ToUpper(),//TODO:######## dirty hack, to be removed when lower case filter introduced for product code
                                 ProductDescription = doc.Get("ProductDescription")
                             };
                     });
@@ -123,7 +140,8 @@ namespace searchpd.Search
                 var doc = new Document();
                 doc.Add(new Field("ProductId", result.ProductId.ToString(CultureInfo.InvariantCulture), Field.Store.YES, Field.Index.NO));
 
-                var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
+//  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
+                var productCodeField = new Field("ProductCode", result.ProductCode.ToLower(), Field.Store.YES,
                                                  Field.Index.ANALYZED);
                 productCodeField.Boost = productCodeBoost;
                 doc.Add(productCodeField);

@@ -58,7 +58,8 @@ namespace searchpd.Tests.IntegrationTests.Search
         public void FindProductsBySearchTerm_InputIsNull_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm(null);
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm(null, 0, 10, out totalHits);
 
             // Assert
             Assert.AreEqual(0, results.Count());
@@ -68,7 +69,8 @@ namespace searchpd.Tests.IntegrationTests.Search
         public void FindProductsBySearchTerm_InputIsEmpty_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("");
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("", 0, 10, out totalHits);
 
             // Assert
             Assert.AreEqual(0, results.Count());
@@ -78,7 +80,8 @@ namespace searchpd.Tests.IntegrationTests.Search
         public void FindProductsBySearchTerm_NoMatches_ReturnsEmptyCollection()
         {
             // Act
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("xxxxyyyyy");
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("xxxxyyyyy", 0, 10, out totalHits);
 
             // Assert
             Assert.AreEqual(0, results.Count());
@@ -91,7 +94,8 @@ namespace searchpd.Tests.IntegrationTests.Search
             var expectedProductIDs = new[] { 40356, 40357 };
 
             // Act
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("PlaTed");
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("PlaTed", 0, 10, out totalHits);
 
             // Assert
             Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
@@ -104,7 +108,8 @@ namespace searchpd.Tests.IntegrationTests.Search
             var expectedProductIDs = new[] { 40354, 40355, 40357, 40358 };
 
             // Act
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20");
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20", 0, 10, out totalHits);
 
             // Assert
             Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
