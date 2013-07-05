@@ -31,7 +31,7 @@ namespace searchpd.Repositories
                                 CategoryName = c.Name,
                                 CategoryId = c.CategoryID,
                                 ParentName = (p.ParentID == 0) ? null : p.Name,
-                                ParentId = p.ParentID
+                                ParentId = p.CategoryID
                             }).ToList();
 
                 //TODO: Optimise this by using a left join instead
