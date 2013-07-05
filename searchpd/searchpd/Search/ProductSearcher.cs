@@ -26,17 +26,16 @@ namespace searchpd.Search
     public class ProductSearcher : IProductSearcher
     {
         private const string CacheKeySearcher = "__ProductSearcher_Searcher";
+        private const Version LuceneVersion = Version.LUCENE_30;
 
-        private const Version LuceneVersion = Version.LUCENE_30; 
+        // This object is a singleton, so should be able to store things safely in a property.
+        private IndexSearcher _searcher;
 
         private readonly IProductRepository _productRepository;
-        private readonly HttpContextBase _httpContextBase;
 
-        public ProductSearcher(IProductRepository productRepository,
-            HttpContextBase httpContextBase)
+        public ProductSearcher(IProductRepository productRepository)
         {
             _productRepository = productRepository;
-            _httpContextBase = httpContextBase;
         }
 
         /// <summary>
@@ -56,12 +55,8 @@ namespace searchpd.Search
             // The StandardAnalyzer stores everything in lower case. So need to convert search term to lower case as well.
             string searchTermLc = searchTerm.ToLower();
 
-            // The searcher should always be in cache, because its cache item has been set to non-removable.
-            var searcher = (IndexSearcher)_httpContextBase.Cache[CacheKeySearcher];
-
             var booleanQuery = new BooleanQuery();
             Query query1 = new WildcardQuery(new Term("ProductCode", "*" + searchTermLc + "*"));
-
             Query query2 = new TermQuery(new Term("ProductDescription", searchTermLc));
 
             // Making both fields SHOULD means only retrieve documents where at least 1 field matches
@@ -69,14 +64,14 @@ namespace searchpd.Search
             booleanQuery.Add(query2, Occur.SHOULD);
 
             // Actual search
-            TopDocs hits = searcher.Search(booleanQuery, searcher.MaxDoc);
+            TopDocs hits = _searcher.Search(booleanQuery, _searcher.MaxDoc);
 
             // Return results. ScoreDocs is already sorted by relevancy desc.
             var sortedResults = hits
                 .ScoreDocs
                 .Select(d =>
                     {
-                        var doc = searcher.Doc(d.Doc);
+                        var doc = _searcher.Doc(d.Doc);
                         return new ProductSearchResult
                             {
                                 ProductId = int.Parse(doc.Get("ProductId")),
@@ -121,11 +116,7 @@ namespace searchpd.Search
             Analyzer analyzer = perFieldAnalyzerWrapper;
 
             var writer = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
-            var searcher = new IndexSearcher(directory, true);
-
-            // Store searcher cache, as not removable. That way, FindProductsBySearchTerm can always get it. 
-            _httpContextBase.Cache.Insert(CacheKeySearcher, searcher,
-                null, Cache.NoAbsoluteExpiration, Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, null);
+            _searcher = new IndexSearcher(directory, true);
 
             // -----------
             // Store products into Lucene

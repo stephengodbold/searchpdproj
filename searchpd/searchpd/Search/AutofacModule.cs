@@ -6,8 +6,10 @@ namespace searchpd.Search
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<SuggestionSearcher>().AsImplementedInterfaces().InstancePerLifetimeScope();
-            builder.RegisterType<ProductSearcher>().AsImplementedInterfaces().InstancePerLifetimeScope();
+            // These objects are solely dependent on the cache and on the Lucene index (a set of files).
+            // So make them into singletons to reflect this.
+            builder.RegisterType<SuggestionSearcher>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<ProductSearcher>().AsImplementedInterfaces().SingleInstance();
         }
     }
 }
