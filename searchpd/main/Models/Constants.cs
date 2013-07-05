@@ -1,4 +1,6 @@
 ﻿using System.Configuration;
+using System.IO;
+using System.Web;
 
 namespace main.Models
 {
@@ -7,6 +9,7 @@ namespace main.Models
         string AutocompleteSearchApiUrl { get; }
         string AutocompleteRefreshApiUrl { get; }
         string LucenePath { get; }
+        string AbsoluteLucenePath { get; }
         float ProductCodeBoost { get; }
     }
 
@@ -26,6 +29,17 @@ namespace main.Models
         public string LucenePath
         {
             get { return ConfigurationManager.AppSettings["LucenePath"]; }
+        }
+
+        // Absolute path where the Lucene files will be stored.
+        public string AbsoluteLucenePath
+        {
+            get
+            {
+                string rootPath = HttpRuntime.AppDomainAppPath;
+                string absoluteLucenePath = Path.Combine(rootPath, LucenePath);
+                return absoluteLucenePath;
+            }
         }
 
         // Boosting of product codes relative to product descriptions during product searches.

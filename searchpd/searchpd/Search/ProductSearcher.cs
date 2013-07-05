@@ -19,7 +19,7 @@ namespace searchpd.Search
     public interface IProductSearcher
     {
         IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm);
-        void LoadProductStore(string lucenePath, float productCodeBoost);
+        void LoadProductStore(string absoluteLucenePath, float productCodeBoost);
         void RefreshProductStore();
     }
 
@@ -86,20 +86,15 @@ namespace searchpd.Search
         /// <summary>
         /// Ensures that the products have been loaded in the Lucene index 
         /// </summary>
-        /// <param name="lucenePath">
-        /// Path relative to the root of the current web app where the Lucene files get stored.
+        /// <param name="absoluteLucenePath">
+        /// Absolute path of the directory where the Lucene files get stored.
         /// </param>
         /// <param name="productCodeBoost">
         /// Weigthing to give to product code relative to product description.
         /// If this is 5, than product code has 5 times the weight of product description.
         /// </param>
-        public void LoadProductStore(string lucenePath, float productCodeBoost)
+        public void LoadProductStore(string absoluteLucenePath, float productCodeBoost)
         {
-            // We've got dependencies here on the run time. Need to remove these before we can unit test
-            // this method.
-            string rootPath = HttpRuntime.AppDomainAppPath;
-            string absoluteLucenePath = Path.Combine(rootPath, lucenePath);
-
             var luceneDir = new DirectoryInfo(absoluteLucenePath);
             if (!luceneDir.Exists)
             {
