@@ -1,0 +1,25 @@
+﻿@model searchpd.Product
+
+@{
+    ViewBag.Title = "Add Product";
+}
+
+<h2>Add Product</h2>
+
+<p>This page is for demo purposes only</p>
+
+@using (Html.BeginForm())
+{
+    <p>
+        @Html.LabelFor(f=>f.Code)
+        @Html.EditorFor(f=>f.Code)
+    </p>
+    <p>
+        @Html.LabelFor(f=>f.Description)
+        @Html.EditorFor(f=>f.Description)
+    </p>
+
+    <input type="submit" value="submit"/>
+}
+
+

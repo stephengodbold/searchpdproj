@@ -1,30 +1,23 @@
 ﻿var Refresher;
 (function (Refresher) {
-    // This code assumes that when the clickHandler runs,
-    // other code will have set
-    // Refresher.refreshUrl
-
     var clickHandler = function () {
 
-        $("#progress").show();
-
+        $("#progress-searchresults").show().html("refreshing search results...");
+        
         $.ajax({
-            url: Searcher.refreshUrl,
-            dataType: 'jsonp',
-            success: function() {
-                $("#progress").hide();
+            type: "POST",
+            url: "/SearchResults/Refresh",
+            data: null,
+            success: function(data) {
+                $("#progress-searchresults").html(data);
             },
-            error: function (xhr, status, error) {
-                $("#progress").hide();
-                alert(error);
-            }
+            dataType: 'text'
         });
 
         return true;
     };
 
     $(function () {
-        $("#refresh").click(clickHandler);
-        $("#progress").hide();
+        $("#refreshbutton").click(clickHandler);
     });
 })(Refresher || (Refresher = {}));

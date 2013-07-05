@@ -13,9 +13,21 @@
     <span id="progress" class="progress">refreshing ...</span>
 </form>
 
+<hr/>
+
+<p>
+    Refresh the product search results after changes have been made to the database.
+</p>
+<button id="refreshbutton">Refresh</button>
+<p id="progress-searchresults" class="progress"></p>
+
+
+
+
 @section Scripts {
 
     @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/refresh")
     
     <script type="text/javascript">
         $(function() {

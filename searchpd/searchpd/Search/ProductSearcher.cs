@@ -20,8 +20,7 @@ namespace searchpd.Search
     public interface IProductSearcher
     {
         IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm, int skip, int take, out int totalHits);
-        void LoadProductStore(string absoluteLucenePath, float productCodeBoost);
-        void RefreshProductStore();
+        void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists);
     }
 
     public class ProductSearcher : IProductSearcher
@@ -75,10 +74,14 @@ namespace searchpd.Search
             booleanQuery.Add(query1, Occur.SHOULD);
             booleanQuery.Add(query2, Occur.SHOULD);
 
+            // Get the searcher. Access _searcher only once while doing a search. Another request running 
+            // LoadProductStore could change this property. By accessing once, you are sure your searcher stays the same.
+            var searcher = _searcher;
+
             // Actual search
 
-            int maxWanted = Math.Min(skip + take, _searcher.MaxDoc);
-            TopDocs hits = _searcher.Search(booleanQuery, maxWanted);
+            int maxWanted = Math.Min(skip + take, searcher.MaxDoc);
+            TopDocs hits = searcher.Search(booleanQuery, maxWanted);
 
             totalHits = hits.TotalHits;
 
@@ -88,7 +91,7 @@ namespace searchpd.Search
                 .Take(maxWanted - skip)
                 .Select(d =>
                     {
-                        var doc = _searcher.Doc(d.Doc);
+                        var doc = searcher.Doc(d.Doc);
                         return new ProductSearchResult
                             {
                                 ProductId = int.Parse(doc.Get("ProductId")),
@@ -102,6 +105,9 @@ namespace searchpd.Search
 
         /// <summary>
         /// Ensures that the products have been loaded in the Lucene index 
+        /// 
+        /// SIDE EFFECT
+        /// This method set property _searcher
         /// </summary>
         /// <param name="absoluteLucenePath">
         /// Absolute path of the directory where the Lucene files get stored.
@@ -110,10 +116,16 @@ namespace searchpd.Search
         /// Weigthing to give to product code relative to product description.
         /// If this is 5, than product code has 5 times the weight of product description.
         /// </param>
-        public void LoadProductStore(string absoluteLucenePath, float productCodeBoost)
+        /// <param name="onlyIfNotExists">
+        /// If true, the index will only be created if there is no index at all (that is, no Lucene directory).
+        /// If false, this will always create a new index.
+        /// </param>
+        public void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists)
         {
             var luceneDir = new DirectoryInfo(absoluteLucenePath);
-            if (!luceneDir.Exists)
+            bool luceneDirExists = luceneDir.Exists;
+
+            if (!luceneDirExists)
             {
                 luceneDir.Create();
                 luceneDir.Refresh();
@@ -121,42 +133,57 @@ namespace searchpd.Search
 
             var directory = new SimpleFSDirectory(luceneDir);
             
+            // Make sure to always create a searcher.
+            _searcher = new IndexSearcher(directory, true);
+
+            if (onlyIfNotExists && luceneDirExists)
+            {
+                return;
+            }
+
             // Create an analyzer that uses standard analyzer for all fields, but keyword analyzer for ProductCode
             // (because we want to regard product codes as 1 word).
             var perFieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion));
             perFieldAnalyzerWrapper.AddAnalyzer("ProductCode", new KeywordAnalyzer());
             Analyzer analyzer = perFieldAnalyzerWrapper;
 
-            var writer = new IndexWriter(directory, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
-            _searcher = new IndexSearcher(directory, true);
 
             // -----------
-            // Store products into Lucene
+            // Store products into Lucene.
+            // This will create a new index. Other requests will still be able to read the existing index.
 
-            IEnumerable<ProductSearchResult> results = _productRepository.GetAllProductSearchResults();
-
-            foreach (var result in results)
+            // Create writer that will overwrite the existing index
+            using (var writer = new IndexWriter(directory, analyzer, true, IndexWriter.MaxFieldLength.UNLIMITED))
             {
-                var doc = new Document();
-                doc.Add(new Field("ProductId", result.ProductId.ToString(CultureInfo.InvariantCulture), Field.Store.YES, Field.Index.NO));
+                IEnumerable<ProductSearchResult> results = _productRepository.GetAllProductSearchResults();
 
-//  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
-                var productCodeField = new Field("ProductCode", result.ProductCode.ToLower(), Field.Store.YES,
-                                                 Field.Index.ANALYZED);
-                productCodeField.Boost = productCodeBoost;
-                doc.Add(productCodeField);
+                foreach (var result in results)
+                {
+                    var doc = new Document();
+                    doc.Add(new Field("ProductId", result.ProductId.ToString(CultureInfo.InvariantCulture), Field.Store.YES, Field.Index.NO));
 
-                doc.Add(new Field("ProductDescription", result.ProductDescription, Field.Store.YES, Field.Index.ANALYZED));
+    //  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
+                    var productCodeField = new Field("ProductCode", result.ProductCode.ToLower(), Field.Store.YES,
+                                                     Field.Index.ANALYZED);
+                    productCodeField.Boost = productCodeBoost;
+                    doc.Add(productCodeField);
 
-                writer.AddDocument(doc);
+                    doc.Add(new Field("ProductDescription", result.ProductDescription, Field.Store.YES, Field.Index.ANALYZED));
+
+                    writer.AddDocument(doc);
+                }
             }
 
-            writer.Commit();
-        }
+            // Now that the index has been updated, need to open a new searcher.
+            // Existing searcher will still be reading the previous index.
+            //
+            // Assign to _searcher only once, with a consistent searcher.
+            //###########var searcher = new IndexSearcher(directory, true);
 
-        public void RefreshProductStore()
-        {
-            
+
+
+            _searcher = new IndexSearcher(directory, true);
+
         }
     }
 }

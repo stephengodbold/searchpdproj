@@ -7,11 +7,10 @@
     @Styles.Render("~/Content/css")
 </head>
 <body>
-    
-@*    <ul id="menu">
-        <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, null)</li>
-        <li>@Html.ActionLink("API", "Index", "Help", new { area = "" }, null)</li>
-    </ul>*@
+    @Html.ActionLink("Search", "Index", "Home") |
+    @Html.ActionLink("Admin", "Index", "Admin") |
+    @Html.ActionLink("Add Product", "AddProduct", "Demo") |
+    @Html.ActionLink("Add Category", "AddCategory", "Demo")
 
     @RenderBody()
 

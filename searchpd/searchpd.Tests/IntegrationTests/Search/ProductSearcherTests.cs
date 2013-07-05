@@ -15,7 +15,7 @@ namespace searchpd.Tests.IntegrationTests.Search
 
         private IProductSearcher _searcher;
 
-  //      [TestInitialize]
+        [TestInitialize]
         public void Initialize()
         {
             IEnumerable<ProductSearchResult> fakeDbProductResults = new List<ProductSearchResult>
@@ -35,26 +35,10 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             _searcher = new ProductSearcher(productRepository);
 
-            _searcher.LoadProductStore(_lucenePath, 5);
+            _searcher.LoadProductStore(_lucenePath, 5, false);
         }
 
         [TestMethod]
-        public void AllTests()
-        {
-            // Couldn't get the individual tests to work due to Lucene locking issues during set up.
-            // So for now running all tests as one.
-            
-            Initialize();
-
-            FindProductsBySearchTerm_InputIsNull_ReturnsEmptyCollection();
-            FindProductsBySearchTerm_InputIsEmpty_ReturnsEmptyCollection();
-            FindProductsBySearchTerm_NoMatches_ReturnsEmptyCollection();
-            FindProductsBySearchTerm_MatchesOnlyProductDescriptions_ReturnsCorrectCollection();
-            FindProductsBySearchTerm_MatchesBothProductCodesAndProductDescriptions_ReturnsCorrectCollection();
-        }
-
-
-  //      [TestMethod]
         public void FindProductsBySearchTerm_InputIsNull_ReturnsEmptyCollection()
         {
             // Act
@@ -65,7 +49,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             Assert.AreEqual(0, results.Count());
         }
 
-   //     [TestMethod]
+        [TestMethod]
         public void FindProductsBySearchTerm_InputIsEmpty_ReturnsEmptyCollection()
         {
             // Act
@@ -76,7 +60,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             Assert.AreEqual(0, results.Count());
         }
 
-  //      [TestMethod]
+        [TestMethod]
         public void FindProductsBySearchTerm_NoMatches_ReturnsEmptyCollection()
         {
             // Act
@@ -87,7 +71,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             Assert.AreEqual(0, results.Count());
         }
 
-    //    [TestMethod]
+        [TestMethod]
         public void FindProductsBySearchTerm_MatchesOnlyProductDescriptions_ReturnsCorrectCollection()
         {
             //Arrange
@@ -101,7 +85,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
         }
 
-      //  [TestMethod]
+        [TestMethod]
         public void FindProductsBySearchTerm_MatchesBothProductCodesAndProductDescriptions_ReturnsCorrectCollection()
         {
             //Arrange

@@ -188,6 +188,7 @@
     <Compile Include="Models\AutofacModule.cs" />
     <Compile Include="Models\Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Views\Admin\DemoController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -232,6 +233,8 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Web.config" />
     <Content Include="Views\Admin\Index.cshtml" />
+    <Content Include="Views\Demo\AddProduct.cshtml" />
+    <Content Include="Views\Demo\AddCategory.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

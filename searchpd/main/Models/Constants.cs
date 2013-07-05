@@ -11,6 +11,7 @@ namespace main.Models
         string LucenePath { get; }
         string AbsoluteLucenePath { get; }
         float ProductCodeBoost { get; }
+        int NbrResultsPerPage { get; }
     }
 
     public class Constants : IConstants
@@ -49,5 +50,9 @@ namespace main.Models
             get { return float.Parse(ConfigurationManager.AppSettings["ProductCodeBoost"]); }
         }
 
+        public int NbrResultsPerPage
+        {
+            get { return int.Parse(ConfigurationManager.AppSettings["NbrResultsPerPage"]); }
+        }
     }
 }
