@@ -53,6 +53,10 @@
     <Reference Include="Autofac.Integration.WebApi">
       <HintPath>..\packages\Autofac.WebApi.3.0.2\lib\net40\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
+    <Reference Include="Lucene.Net, Version=3.0.3.0, Culture=neutral, PublicKeyToken=85089178b9ac3181, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="NSubstitute">
       <HintPath>..\packages\NSubstitute.1.6.1.0\lib\NET40\NSubstitute.dll</HintPath>
@@ -212,11 +216,6 @@
     <None Include="Scripts\jquery-1.8.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.8.2.js" />
     <Content Include="Scripts\jquery-1.8.2.min.js" />
-    <Content Include="Scripts\jquery-ui-1.9.2.js" />
-    <Content Include="Scripts\jquery-ui-1.9.2.min.js" />
-    <Content Include="Scripts\knockout-2.2.0.debug.js" />
-    <Content Include="Scripts\knockout-2.2.0.js" />
-    <Content Include="Scripts\modernizr-2.6.2.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

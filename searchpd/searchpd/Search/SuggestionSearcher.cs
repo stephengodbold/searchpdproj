@@ -1,123 +1,160 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Web;
+using Lucene.Net.Analysis;
+using Lucene.Net.Analysis.Standard;
+using Lucene.Net.Documents;
+using Lucene.Net.Index;
+using Lucene.Net.Search;
+using Lucene.Net.Store;
 using searchpd.Models;
 using searchpd.Repositories;
+using Version = Lucene.Net.Util.Version;
 
 namespace searchpd.Search
 {
     public interface ISuggestionSearcher
     {
         IEnumerable<ISuggestion> FindSuggestionsBySubstring(string subString);
-        void EnsureSuggestions();
-        void RefreshSuggestions();
+        void LoadSuggestionsStore(string absoluteLucenePath, bool onlyIfNotExists);
     }
 
-    public class SuggestionSearcher : ISuggestionSearcher
+    public class SuggestionSearcher : LuceneSearcher, ISuggestionSearcher
     {
-        private const string CacheKeyCategorySuggestions = "__Searcher_CategorySuggestions";
-        private const string CacheKeyProductSuggestions = "__Searcher_ProductSuggestions";
-        private static readonly object CacheLock = new object();
-
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
-        private readonly HttpContextBase _httpContextBase;
 
-        public SuggestionSearcher(ICategoryRepository categoryRepository, IProductRepository productRepository,
-            HttpContextBase httpContextBase)
+        private const string CategorySuggestionCode = "c";
+        private const string ProductSuggestionCode = "p";
+
+        public SuggestionSearcher(ICategoryRepository categoryRepository, IProductRepository productRepository)
         {
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
-            _httpContextBase = httpContextBase;
         }
 
         /// <summary>
-        /// Returns a collection of all suggestions that match the given sub string.
-        /// If the sub string is null or empty, or doesn't match any categories, than an empty list is returned.
+        /// Returns a collection of all suggestions that match the given searchTerm.
+        /// A match means search term appears anywhere in the product code or category name.
+        /// 
+        /// If the searchTerm is null or empty, or doesn't match any categories, than an empty list is returned.
         /// The suggestions will be returned in the correct order.
         /// </summary>
-        /// <param name="subString"></param>
+        /// <param name="searchTerm"></param>
         /// <returns></returns>
-        public IEnumerable<ISuggestion> FindSuggestionsBySubstring(string subString)
+        public IEnumerable<ISuggestion> FindSuggestionsBySubstring(string searchTerm)
         {
-            if (string.IsNullOrEmpty(subString))
+            if (string.IsNullOrEmpty(searchTerm))
             {
                 return new List<CategorySuggestion>();
             }
 
-            // TODO: Not very efficient implementation. To be replaced by something better if it turns out too slow.
-            // A simple way to speed this up would be by caching search results, with relatively low priority (so they
-            // get scavenged first). This would probably work because the site probably has a relative small number of 
-            // tradies doing the same searches repeatedly.
+            // The product codes and category names have been stored in lower case. So need to convert search term to lower case as well.
+            string searchTermLc = searchTerm.ToLower();
 
-            string subStringLc = subString.ToLower();
+            Query query1 = new WildcardQuery(new Term("LcName", "*" + searchTermLc + "*"));
 
-            var selectedHierarchies = AllCategorySuggestions().Where(s => s.CategoryName.ToLower().Contains(subStringLc));
+            // Get the searcher. Access _searcher only once while doing a search. Another request running 
+            // LoadProductStore could change this property. By accessing once, you are sure your searcher stays the same.
+            var searcher = _searcher;
 
-            var sortedCategorySuggestions = selectedHierarchies
-                .OrderBy(c => (c.HasParent) ? c.ParentName : "")
-                .ThenBy(c => c.CategoryName);
+            // Actual search
 
-            var selectedProductSuggestions = AllProductSuggestions()
-                .Where(p => p.ProductCode.ToLower().Contains(subStringLc));
+            TopDocs hits = searcher.Search(query1, searcher.MaxDoc);
 
-            var sortedProductSuggestions =
-                selectedProductSuggestions.OrderBy(p => p.ProductCode);
-
-            var finalSuggestions = sortedCategorySuggestions.Union<ISuggestion>(sortedProductSuggestions).ToList();
-
-            return finalSuggestions;
-        }
-
-        /// <summary>
-        /// Stores the suggestions in cache if they are not already there.
-        /// </summary>
-        public void EnsureSuggestions()
-        {
-            AllCategorySuggestions();
-            AllProductSuggestions();
-        }
-
-        /// <summary>
-        /// Refreshes the suggestion caches from the database.
-        /// </summary>
-        public void RefreshSuggestions()
-        {
-            _httpContextBase.Cache.Remove(CacheKeyCategorySuggestions);
-            _httpContextBase.Cache.Remove(CacheKeyProductSuggestions);
-            EnsureSuggestions();
-        }
-
-        private IEnumerable<CategorySuggestion> AllCategorySuggestions()
-        {
-            return RetrieveFromCache(CacheKeyCategorySuggestions, _categoryRepository.GetAllSuggestions);
-        }
-
-        private IEnumerable<ProductSuggestion> AllProductSuggestions()
-        {
-            return RetrieveFromCache(CacheKeyProductSuggestions, _productRepository.GetAllSuggestions);
-        }
-
-        private T RetrieveFromCache<T>(string cacheKey, Func<T> generateData) where T : class
-        {
-            var data = (T)_httpContextBase.Cache[cacheKey];
-            if (data == null)
-            {
-                lock (CacheLock)
+            // Return results. ScoreDocs is sorted by relevancy, but we want alphabetic sorting, and category suggestions first.
+            IEnumerable<ISuggestion> sortedResults = hits.ScoreDocs
+                .Select(d =>
                 {
-                    // Ensure that the data was not loaded by a concurrent thread 
-                    // while waiting for lock.
-                    data = (T)_httpContextBase.Cache[cacheKey];
-                    if (data == null)
-                    {
-                        data = generateData();
-                        _httpContextBase.Cache[cacheKey] = data;
-                    }
+                    var doc = searcher.Doc(d.Doc);
+                    return DocToSuggestion(doc);
+                })
+                .OrderBy(s=>(s is CategorySuggestion ? 0 : 1))
+                .ThenBy(s=>s.SortedName);
+
+            return sortedResults;
+        }
+
+        /// <summary>
+        /// Ensures that the suggestions have been loaded in the Lucene index 
+        /// 
+        /// SIDE EFFECT
+        /// This method sets property _searcher in the base class
+        /// </summary>
+        /// <param name="absoluteLucenePath">
+        /// Absolute path of the directory where the Lucene files get stored.
+        /// </param>
+        /// <param name="onlyIfNotExists">
+        /// If true, the index will only be created if there is no index at all (that is, no Lucene directory).
+        /// If false, this will always create a new index.
+        /// </param>
+        public void LoadSuggestionsStore(string absoluteLucenePath, bool onlyIfNotExists)
+        {
+            LoadStore(absoluteLucenePath, onlyIfNotExists, LoadLuceneIndex);
+        }
+
+        /// <summary>
+        /// Loads the data into the Lucene index
+        /// </summary>
+        /// <param name="directory">
+        /// Directory where the index is located.
+        /// </param>
+        private void LoadLuceneIndex(SimpleFSDirectory directory)
+        {
+            Analyzer analyzer = new KeywordAnalyzer();
+
+            // -----------
+            // Store products into Lucene.
+            // This will create a new index. Other requests will still be able to read the existing index.
+
+            // Create writer that will overwrite the existing index
+            using (var writer = new IndexWriter(directory, analyzer, true, IndexWriter.MaxFieldLength.UNLIMITED))
+            {
+                IEnumerable<ProductSuggestion> productSuggestions = _productRepository.GetAllSuggestions();
+
+                foreach (var productSuggestion in productSuggestions)
+                {
+                    // Storing all names in lower case, so we can do case insensitive search easily
+
+                    var doc = new Document();
+                    doc.Add(new Field("Object", productSuggestion.ToString(), Field.Store.YES, Field.Index.NO));
+                    doc.Add(new Field("LcName", productSuggestion.ProductCode.ToLower(), Field.Store.NO, Field.Index.ANALYZED));
+                    doc.Add(new Field("SuggestionType", ProductSuggestionCode , Field.Store.YES, Field.Index.NO));
+                    writer.AddDocument(doc);
+                }
+
+                IEnumerable<CategorySuggestion> categorySuggestions = _categoryRepository.GetAllSuggestions();
+
+                foreach (var categorySuggestion in categorySuggestions)
+                {
+                    var doc = new Document();
+                    doc.Add(new Field("Object", categorySuggestion.ToString(), Field.Store.YES, Field.Index.NO));
+                    doc.Add(new Field("LcName", categorySuggestion.CategoryName.ToLower(), Field.Store.NO, Field.Index.ANALYZED));
+                    doc.Add(new Field("SuggestionType", CategorySuggestionCode, Field.Store.YES, Field.Index.NO));
+                    writer.AddDocument(doc);
                 }
             }
+        }
 
-            return data;
+        private ISuggestion DocToSuggestion(Document doc)
+        {
+            string suggestionType = doc.Get("SuggestionType");
+            string serialisedObject = doc.Get("Object");
+
+            switch (suggestionType)
+            {
+                case ProductSuggestionCode:
+                    return ProductSuggestion.Parse(serialisedObject);
+
+                case CategorySuggestionCode:
+                    return CategorySuggestion.Parse(serialisedObject);
+
+                default:
+                    throw new Exception(string.Format("Unknown suggestion type: {0}", suggestionType));
+            }
         }
     }
 }

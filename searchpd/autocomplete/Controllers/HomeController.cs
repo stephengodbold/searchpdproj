@@ -11,19 +11,6 @@ namespace main.Controllers
         {
             _searcher = searcher;
         }
-
-        // This form will only be posted to by 
-        // /home/admin 
-        // in the main site.
-
-        // POST /home/refresh
-        // Reloads the suggestions cache
-        [System.Web.Http.HttpPost]
-        public ActionResult Refresh()
-        {
-            _searcher.RefreshSuggestions();
-            return View();
-        }
     }
 }
 

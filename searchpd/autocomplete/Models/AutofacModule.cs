@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using main.Models;
+using autocomplete.Models;
 
 namespace searchpd.Repositories
 {

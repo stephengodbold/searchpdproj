@@ -2,6 +2,7 @@
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using autocomplete.Models;
 using searchpd.Models;
 using searchpd.Search;
 
@@ -10,10 +11,12 @@ namespace autocomplete.Controllers
     public class SuggestionsController : Controller
     {
         private readonly ISuggestionSearcher _searcher;
+        private readonly IConstants _constants;
 
-        public SuggestionsController(ISuggestionSearcher searcher)
+        public SuggestionsController(ISuggestionSearcher searcher, IConstants constants)
         {
             _searcher = searcher;
+            _constants = constants;
         }
 
         //
@@ -39,5 +42,13 @@ namespace autocomplete.Controllers
             return jsonpResponse;
         }
 
+        // POST /suggestions/refresh
+        // Reloads the Lucene index with suggestions. 
+        [System.Web.Http.HttpPost]
+        public string Refresh()
+        {
+            _searcher.LoadSuggestionsStore(_constants.AbsoluteLucenePath, false);
+            return "#############";
+        }
     }
 }

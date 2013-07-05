@@ -65,6 +65,27 @@
         {
             return 23 * ProductId.GetHashCode();
         }
+
+        /// <summary>
+        /// Serialise this object to a string efficiently
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return ProductDescription + "\n" + ProductCode + "\n" + ProductId.ToString();
+        }
+
+        /// <summary>
+        /// Deserialse from a string.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static ProductSearchResult Parse(string s)
+        {
+            string[] parts = s.Split('\n');
+
+            return new ProductSearchResult(parts[0], parts[1], int.Parse(parts[2]));
+        }
     }
 }
 

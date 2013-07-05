@@ -1,4 +1,6 @@
-﻿namespace searchpd.Models
+﻿using System.Globalization;
+
+namespace searchpd.Models
 {
     /// <summary>
     /// Represents a product suggestion.
@@ -11,6 +13,8 @@
 
         public string ProductCode { get; set; }
         public int ProductId { get; set; } // Be sure never to update this after object creation, it is used as the hash code.
+
+        public string SortedName { get { return ProductCode; }  }
 
         public ProductSuggestion()
         {
@@ -60,6 +64,27 @@
         public override int GetHashCode()
         {
             return 23 * ProductId.GetHashCode();
+        }
+
+        /// <summary>
+        /// Serialise this object to a string efficiently
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return ProductCode + "\n" + ProductId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Deserialse from a string.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static ProductSuggestion Parse(string s)
+        {
+            string[] parts = s.Split('\n');
+
+            return new ProductSuggestion(parts[0], int.Parse(parts[1]));
         }
     }
 }

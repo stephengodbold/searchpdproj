@@ -57,7 +57,7 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             // ------------
 
-            _searcher = new SuggestionSearcher(categoryRepository, productRepository, httpContext);
+            _searcher = new SuggestionSearcher(categoryRepository, productRepository);
         }
 
         /// <summary>

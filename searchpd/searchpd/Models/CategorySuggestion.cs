@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 
 namespace searchpd.Models
 {
@@ -24,6 +25,8 @@ namespace searchpd.Models
         public int ParentId { get; set; }
 
         public bool HasParent { get { return (ParentName != null); } }
+
+        public string SortedName { get { return ParentName + " " + CategoryName; } }
 
         public CategorySuggestion()
         {
@@ -84,6 +87,28 @@ namespace searchpd.Models
         public override int GetHashCode()
         {
             return 23 * CategoryId.GetHashCode();
+        }
+
+        /// <summary>
+        /// Serialise this object to a string efficiently
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return CategoryName + "\n" + CategoryId.ToString(CultureInfo.InvariantCulture) + "\n" + 
+                ParentName + "\n" + ParentId.ToString(CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Deserialse from a string.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static CategorySuggestion Parse(string s)
+        {
+            string[] parts = s.Split('\n');
+
+            return new CategorySuggestion(parts[0], int.Parse(parts[1]), parts[2], int.Parse(parts[3]));
         }
     }
 }

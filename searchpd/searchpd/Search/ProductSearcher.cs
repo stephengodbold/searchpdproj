@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Web;
 using searchpd.Models;
 using searchpd.Repositories;
 using Lucene.Net.Analysis;
@@ -12,8 +10,6 @@ using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
-using Version = Lucene.Net.Util.Version;
-using System.Web.Caching;
 
 namespace searchpd.Search
 {
@@ -23,14 +19,8 @@ namespace searchpd.Search
         void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists);
     }
 
-    public class ProductSearcher : IProductSearcher
+    public class ProductSearcher : LuceneSearcher, IProductSearcher
     {
-        private const string CacheKeySearcher = "__ProductSearcher_Searcher";
-        private const Version LuceneVersion = Version.LUCENE_30;
-
-        // This object is a singleton, so should be able to store things safely in a property.
-        private IndexSearcher _searcher;
-
         private readonly IProductRepository _productRepository;
 
         public ProductSearcher(IProductRepository productRepository)
@@ -107,7 +97,7 @@ namespace searchpd.Search
         /// Ensures that the products have been loaded in the Lucene index 
         /// 
         /// SIDE EFFECT
-        /// This method set property _searcher
+        /// This method sets property _searcher
         /// </summary>
         /// <param name="absoluteLucenePath">
         /// Absolute path of the directory where the Lucene files get stored.
@@ -122,31 +112,27 @@ namespace searchpd.Search
         /// </param>
         public void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists)
         {
-            var luceneDir = new DirectoryInfo(absoluteLucenePath);
-            bool luceneDirExists = luceneDir.Exists;
+            LoadStore(absoluteLucenePath, onlyIfNotExists,
+                      (directory) => { LoadLuceneIndex(directory, productCodeBoost); });
+        }
 
-            if (!luceneDirExists)
-            {
-                luceneDir.Create();
-                luceneDir.Refresh();
-            }
-
-            var directory = new SimpleFSDirectory(luceneDir);
-            
-            // Make sure to always create a searcher.
-            _searcher = new IndexSearcher(directory, true);
-
-            if (onlyIfNotExists && luceneDirExists)
-            {
-                return;
-            }
-
+        /// <summary>
+        /// Loads the data into the Lucene index
+        /// </summary>
+        /// <param name="directory">
+        /// Directory where the index is located.
+        /// </param>
+        /// <param name="productCodeBoost">
+        /// Weigthing to give to product code relative to product description.
+        /// If this is 5, than product code has 5 times the weight of product description.
+        /// </param>
+        private void LoadLuceneIndex(SimpleFSDirectory directory, float productCodeBoost)
+        {
             // Create an analyzer that uses standard analyzer for all fields, but keyword analyzer for ProductCode
             // (because we want to regard product codes as 1 word).
             var perFieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion));
             perFieldAnalyzerWrapper.AddAnalyzer("ProductCode", new KeywordAnalyzer());
             Analyzer analyzer = perFieldAnalyzerWrapper;
-
 
             // -----------
             // Store products into Lucene.
@@ -162,7 +148,7 @@ namespace searchpd.Search
                     var doc = new Document();
                     doc.Add(new Field("ProductId", result.ProductId.ToString(CultureInfo.InvariantCulture), Field.Store.YES, Field.Index.NO));
 
-    //  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
+                    //  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
                     var productCodeField = new Field("ProductCode", result.ProductCode.ToLower(), Field.Store.YES,
                                                      Field.Index.ANALYZED);
                     productCodeField.Boost = productCodeBoost;
@@ -173,17 +159,7 @@ namespace searchpd.Search
                     writer.AddDocument(doc);
                 }
             }
-
-            // Now that the index has been updated, need to open a new searcher.
-            // Existing searcher will still be reading the previous index.
-            //
-            // Assign to _searcher only once, with a consistent searcher.
-            //###########var searcher = new IndexSearcher(directory, true);
-
-
-
-            _searcher = new IndexSearcher(directory, true);
-
         }
     }
 }
+

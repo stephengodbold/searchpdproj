@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using autocomplete.Models;
 using searchpd.Search;
 
 namespace autocomplete.App_Start
@@ -18,8 +19,10 @@ namespace autocomplete.App_Start
 
             using (var scope = container.BeginLifetimeScope())
             {
+                var constants = scope.Resolve<IConstants>();
+
                 var searcher = scope.Resolve<ISuggestionSearcher>();
-                searcher.EnsureSuggestions();
+                searcher.LoadSuggestionsStore(constants.AbsoluteLucenePath, true);
             }
         }
     }
