@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using main.Models;
 using searchpd;
 using searchpd.Repositories;
@@ -11,9 +7,9 @@ namespace main.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ICategoryRepository _categoryRepository = null;
-        private readonly IProductRepository _productRepository = null;
-        private readonly IConstants _constants = null;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IConstants _constants;
 
         public HomeController(ICategoryRepository categoryRepository, IProductRepository productRepository,
             IConstants constants)

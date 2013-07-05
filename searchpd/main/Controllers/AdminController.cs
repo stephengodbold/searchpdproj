@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using main.Models;
-using searchpd;
-using searchpd.Repositories;
 
 namespace main.Controllers
 {
     public class AdminController : Controller
     {
-        private readonly IConstants _constants = null;
+        private readonly IConstants _constants;
 
         public AdminController(IConstants constants)
         {

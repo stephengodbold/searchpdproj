@@ -118,7 +118,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IntegrationTests\Search\SearcherTests.cs" />
+    <Compile Include="IntegrationTests\Search\SuggestionSearcherTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnitTests\UI\DisplayFormatterTests.cs" />
   </ItemGroup>

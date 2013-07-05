@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Web;
-using System.Web.Caching;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using searchpd.Models;
 using searchpd.Repositories;
@@ -12,7 +10,7 @@ using System.Linq;
 namespace searchpd.Tests.IntegrationTests.Search
 {
     [TestClass]
-    public class SearcherTests
+    public class SuggestionSearcherTests
     {
         private ISuggestionSearcher _searcher;
 
@@ -20,7 +18,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         ///Initialize() is called once during test execution before
         ///test methods in this test class are executed.
         ///</summary>
-        [TestInitialize()]
+        [TestInitialize]
         public void Initialize()
         {
             // Fake category data
@@ -67,7 +65,7 @@ namespace searchpd.Tests.IntegrationTests.Search
         ///test methods in this class have executed unless
         ///this test class' Initialize() method throws an exception.
         ///</summary>
-        [TestCleanup()]
+        [TestCleanup]
         public void Cleanup()
         {
         }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Text;
-
-namespace searchpd.Models
+﻿namespace searchpd.Models
 {
     /// <summary>
     /// Represents a single result of a product search.

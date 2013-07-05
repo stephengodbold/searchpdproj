@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using searchpd.Models;
 
 namespace searchpd.Tests.UnitTests.UI
@@ -17,7 +12,7 @@ namespace searchpd.Tests.UnitTests.UI
         ///Initialize() is called once during test execution before
         ///test methods in this test class are executed.
         ///</summary>
-        [TestInitialize()]
+        [TestInitialize]
         public void Initialize()
         {
             _displayObject = new DisplayObject();
@@ -28,7 +23,7 @@ namespace searchpd.Tests.UnitTests.UI
         ///test methods in this class have executed unless
         ///this test class' Initialize() method throws an exception.
         ///</summary>
-        [TestCleanup()]
+        [TestCleanup]
         public void Cleanup()
         {
         }
