@@ -88,6 +88,10 @@ csx
 # Windows Store app package directory
 AppPackages/
 
+# Lucene index
+Lucene/
+
+
 # Others
 [Bb]in
 [Oo]bj

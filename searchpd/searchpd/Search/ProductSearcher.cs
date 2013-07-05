@@ -59,13 +59,16 @@ namespace searchpd.Search
                 return new List<ProductSearchResult>();
             }
 
+            // The StandardAnalyzer stores everything in lower case. So need to convert search term to lower case as well.
+            string searchTermLc = searchTerm.ToLower();
+
             // The searcher should always be in cache, because its cache item has been set to non-removable.
             var searcher = (IndexSearcher)_httpContextBase.Cache[CacheKeySearcher];
 
             var booleanQuery = new BooleanQuery();
-            Query query1 = new WildcardQuery(new Term("ProductCode", "*" + searchTerm + "*"));
+            Query query1 = new WildcardQuery(new Term("ProductCode", "*" + searchTermLc + "*"));
 
-            Query query2 = new TermQuery(new Term("ProductDescription", searchTerm));
+            Query query2 = new TermQuery(new Term("ProductDescription", searchTermLc));
 
             // Making both fields SHOULD means only retrieve documents where at least 1 field matches
             booleanQuery.Add(query1, Occur.SHOULD);
