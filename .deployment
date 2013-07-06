@@ -1,4 +1,3 @@
 [config]
-project = searchpd\autocomplete\autocomplete.csproj
-
+project = searchpd\main\main.csproj
 
