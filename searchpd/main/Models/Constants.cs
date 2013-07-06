@@ -6,24 +6,25 @@ namespace main.Models
 {
     public interface IConstants
     {
-        string AutocompleteSearchApiUrl { get; }
-        string AutocompleteRefreshApiUrl { get; }
+        string AutocompleteSearchUrl { get; }
+        string AutocompleteRefreshUrl { get; }
         string LucenePath { get; }
         string AbsoluteLucenePath { get; }
         float ProductCodeBoost { get; }
         int NbrResultsPerPage { get; }
+        string AutocompleteRefreshPassword { get; }
     }
 
     public class Constants : IConstants
     {
-        public string AutocompleteSearchApiUrl
+        public string AutocompleteSearchUrl
         {
-            get { return ConfigurationManager.AppSettings["AutocompleteSearchApiUrl"]; }
+            get { return ConfigurationManager.AppSettings["AutocompleteSearchUrl"]; }
         }
 
-        public string AutocompleteRefreshApiUrl
+        public string AutocompleteRefreshUrl
         {
-            get { return ConfigurationManager.AppSettings["AutocompleteRefreshApiUrl"]; }
+            get { return ConfigurationManager.AppSettings["AutocompleteRefreshUrl"]; }
         }
 
         // Path relative to the root of the executing site where the Lucene files will be stored.
@@ -53,6 +54,11 @@ namespace main.Models
         public int NbrResultsPerPage
         {
             get { return int.Parse(ConfigurationManager.AppSettings["NbrResultsPerPage"]); }
+        }
+
+        public string AutocompleteRefreshPassword
+        {
+            get { return ConfigurationManager.AppSettings["AutocompleteRefreshPassword"]; }
         }
     }
 }

@@ -10,6 +10,7 @@ namespace searchpd.Search
             // So make them into singletons to reflect this.
             builder.RegisterType<SuggestionSearcher>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<ProductSearcher>().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<AutoupdateRefresher>().AsImplementedInterfaces().SingleInstance();
         }
     }
 }

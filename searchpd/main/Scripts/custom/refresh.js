@@ -1,23 +1,34 @@
-﻿var Refresher;
-(function (Refresher) {
-    var clickHandler = function () {
+﻿(function () {
+    var nbrOutstandingRequests = 0;
 
-        $("#progress-searchresults").show().html("refreshing search results...");
-        
+    var sendRefreshRequest = function(url, progressId, progressMessage) {
+        $("#refreshbutton").attr('disabled', 'disabled');
+        $("#" + progressId).html(progressMessage);
+        nbrOutstandingRequests++;
+
         $.ajax({
             type: "POST",
-            url: "/SearchResults/Refresh",
+            url: url,
             data: null,
             success: function(data) {
-                $("#progress-searchresults").html(data);
+                $("#" + progressId).html(data);
+                nbrOutstandingRequests--;
+                if (nbrOutstandingRequests == 0) {
+                    $("#refreshbutton").removeAttr('disabled');
+                }
             },
             dataType: 'text'
         });
+    };
 
-        return true;
+    var clickHandler = function () {
+        sendRefreshRequest("/Refresh/SearchResults", "progress-searchresults", "refreshing search results...");
+        sendRefreshRequest("/Refresh/Suggestions", "progress-suggestions", "refreshing suggestions...");
+
+        return false;
     };
 
     $(function () {
         $("#refreshbutton").click(clickHandler);
     });
-})(Refresher || (Refresher = {}));
+})();

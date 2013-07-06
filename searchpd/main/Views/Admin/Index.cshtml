@@ -4,40 +4,17 @@
 
 <h2>Admin</h2>
 <p>
-    Click button after product or category data has been updated in the database.
-    This will refresh the autocomplete suggestions.
-</p>
-
-<form name="refresh" action="@(ViewBag.AutocompleteRefreshApiUrl)" method="post">
-    <input type="submit" id="refresh" value="Refresh" ></input>
-    <span id="progress" class="progress">refreshing ...</span>
-</form>
-
-<hr/>
-
-<p>
-    Refresh the product search results after changes have been made to the database.
+    Refresh the product search and autocomplete suggestions from the database.
+    You would use this after changes have been made to the database.
 </p>
 <button id="refreshbutton">Refresh</button>
 <p id="progress-searchresults" class="progress"></p>
-
-
-
+<p id="progress-suggestions" class="progress"></p>
 
 @section Scripts {
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/refresh")
-    
-    <script type="text/javascript">
-        $(function() {
-            $("#progress").hide();
-            $("#refresh").click(function() {
-                $("#progress").show();
-              //  $("#refresh").attr('disabled', 'disabled');
-            });
-        });
-    </script>
 }
 
 

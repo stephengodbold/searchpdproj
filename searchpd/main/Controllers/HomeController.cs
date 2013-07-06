@@ -21,7 +21,7 @@ namespace main.Controllers
 
         public ActionResult Index()
         {
-            ViewBag.AutocompleteSearchApiUrl = _constants.AutocompleteSearchApiUrl;
+            ViewBag.AutocompleteSearchUrl = _constants.AutocompleteSearchUrl;
             return View();
         }
 

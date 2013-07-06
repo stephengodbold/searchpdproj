@@ -7,16 +7,12 @@ namespace main.Controllers
     {
         private readonly IConstants _constants;
 
-        public AdminController(IConstants constants)
+        public AdminController()
         {
-            _constants = constants;
         }
 
         public ActionResult Index()
         {
-            // Form will post to other server, so this server will not get the POST
-
-            ViewBag.AutocompleteRefreshApiUrl = _constants.AutocompleteRefreshApiUrl;
             return View();
         }
     }

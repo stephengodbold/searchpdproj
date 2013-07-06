@@ -8,6 +8,7 @@ namespace autocomplete.Models
     {
         string LucenePath { get; }
         string AbsoluteLucenePath { get; }
+        string AutocompleteRefreshPassword { get; }
     }
 
     public class Constants : IConstants
@@ -27,6 +28,11 @@ namespace autocomplete.Models
                 string absoluteLucenePath = Path.Combine(rootPath, LucenePath);
                 return absoluteLucenePath;
             }
+        }
+
+        public string AutocompleteRefreshPassword
+        {
+            get { return ConfigurationManager.AppSettings["AutocompleteRefreshPassword"]; }
         }
     }
 }

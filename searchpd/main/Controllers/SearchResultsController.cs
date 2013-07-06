@@ -21,21 +21,6 @@ namespace main.Controllers
             _constants = constants;
         }
 
-        /// <summary>
-        /// Loads a new Lucene index. 
-        /// 
-        /// This action would be called after database changes.
-        /// While this action is running (can take a while), other requests can still access the existing index.
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        public string Refresh()
-        {
-            _searcher.LoadProductStore(_constants.AbsoluteLucenePath, _constants.ProductCodeBoost, false);
-
-            return "Product search results updated";
-        }
-
         //
         // GET: /SearchResults/
 
@@ -60,7 +45,7 @@ namespace main.Controllers
             int totalHits;
             IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm(searchTerm, skip, _constants.NbrResultsPerPage, out totalHits);
 
-            if (results.Count() == 0)
+            if (!results.Any())
             {
                 return "<p>No results</p>";
             }

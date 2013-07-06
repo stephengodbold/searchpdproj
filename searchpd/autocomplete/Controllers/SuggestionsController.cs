@@ -11,12 +11,10 @@ namespace autocomplete.Controllers
     public class SuggestionsController : Controller
     {
         private readonly ISuggestionSearcher _searcher;
-        private readonly IConstants _constants;
 
-        public SuggestionsController(ISuggestionSearcher searcher, IConstants constants)
+        public SuggestionsController(ISuggestionSearcher searcher)
         {
             _searcher = searcher;
-            _constants = constants;
         }
 
         //
@@ -40,15 +38,6 @@ namespace autocomplete.Controllers
             string finalHtml = html.ToString();
             string jsonpResponse = string.Format("{0}(\'{1}\')", callback, HttpUtility.JavaScriptStringEncode(finalHtml));
             return jsonpResponse;
-        }
-
-        // POST /suggestions/refresh
-        // Reloads the Lucene index with suggestions. 
-        [System.Web.Http.HttpPost]
-        public string Refresh()
-        {
-            _searcher.LoadSuggestionsStore(_constants.AbsoluteLucenePath, false);
-            return "#############";
         }
     }
 }

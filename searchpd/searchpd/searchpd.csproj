@@ -202,6 +202,7 @@
     <Compile Include="Repositories\CategoryRepository.cs" />
     <Compile Include="Repositories\ProductRepository.cs" />
     <Compile Include="Search\AutofacModule.cs" />
+    <Compile Include="Search\AutoupdateRefresher.cs" />
     <Compile Include="Search\LuceneSearcher.cs" />
     <Compile Include="Search\ProductSearcher.cs" />
     <Compile Include="Search\SuggestionSearcher.cs" />
