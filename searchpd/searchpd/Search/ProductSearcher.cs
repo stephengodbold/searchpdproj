@@ -48,9 +48,14 @@ namespace searchpd.Search
         {
             totalHits = 0;
 
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            if (string.IsNullOrWhiteSpace(searchTerm) || (take < 1))
             {
                 return new List<ProductSearchResult>();
+            }
+
+            if (skip < 0)
+            {
+                throw new ArgumentException(string.Format("skip = {0}. Should be >= 0", skip));
             }
 
             // The StandardAnalyzer stores everything in lower case. So need to convert search term to lower case as well.

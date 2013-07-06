@@ -99,6 +99,62 @@ namespace searchpd.Tests.IntegrationTests.Search
             Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
         }
 
+        [TestMethod]
+        public void FindProductsBySearchTerm_PagingEmptyPage_ReturnsEmptyCollection()
+        {
+            // Act
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20", 0, 0, out totalHits).ToList();
+
+            // Assert
+            Assert.AreEqual(0, results.Count());
+        }
+
+        [TestMethod]
+        public void FindProductsBySearchTerm_PagingFirstPage_ReturnsCorrectCollection()
+        {
+            //Arrange
+            var expectedProductIDs = new[] { 40354, 40355 };
+
+            // Act
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20", 0, 2, out totalHits).ToList();
+
+            // Assert
+            Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
+            Assert.AreEqual(2, results.Count());
+        }
+
+        [TestMethod]
+        public void FindProductsBySearchTerm_PagingNextPage_ReturnsCorrectCollection()
+        {
+            //Arrange
+            var expectedProductIDs = new[] { 40357, 40358 };
+
+            // Act
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20", 2, 2, out totalHits).ToList();
+
+            // Assert
+            Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
+            Assert.AreEqual(2, results.Count());
+        }
+
+        [TestMethod]
+        public void FindProductsBySearchTerm_PagingNextPageTooManyAsked_ReturnsCorrectCollection()
+        {
+            //Arrange
+            var expectedProductIDs = new[] { 40357, 40358 };
+
+            // Act
+            int totalHits;
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm("20", 2, 3, out totalHits).ToList();
+
+            // Assert
+            Assert.IsTrue(ContainsProductIDs(results, expectedProductIDs));
+            Assert.AreEqual(2, results.Count());
+        }
+
         /// <summary>
         /// Returns true if all given productIDs are represented in the results.
         /// </summary>
