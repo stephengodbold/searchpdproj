@@ -1,15 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using main.Models;
-using searchpd.Models;
 using searchpd.Search;
 
 namespace main.Controllers
 {
+    /// <summary>
+    /// You could use this controller to initiate re-indexing from the admin site.
+    /// In that case, you'd need to add an authorize attribute here to only authorised personnel can
+    /// start a re-index.
+    /// 
+    /// Otherwise, this controller is for demo purposes only and should not go live.
+    /// </summary>
     public class RefreshController : Controller
     {
         private readonly IProductSearcher _searcher;
