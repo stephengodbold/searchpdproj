@@ -6,13 +6,26 @@ using searchpd.Repositories;
 using searchpd.Search;
 using NSubstitute;
 using System.Linq;
+using System.IO;
 
 namespace searchpd.Tests.IntegrationTests.Search
 {
     [TestClass]
     public class SuggestionSearcherTests
     {
+        private const string LucenePath = "d:\\temp\\LuceneSuggestions";
+
         private ISuggestionSearcher _searcher;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext context)
+        {
+            var luceneDir = new DirectoryInfo(LucenePath);
+            if (luceneDir.Exists)
+            {
+                luceneDir.Delete(true);
+            }
+        }
 
         /// <summary>
         ///Initialize() is called once during test execution before
@@ -31,9 +44,9 @@ namespace searchpd.Tests.IntegrationTests.Search
                     new CategorySuggestion("Gamma-ray gun",200,"Space weapons",20),
                     new CategorySuggestion("X-ray gun 15'",101,"Laser weapons",10),
                     new CategorySuggestion("X-ray gun 12'",100,"Laser weapons",10),
-                    new CategorySuggestion("Space weapons",20,null,0),
+                    new CategorySuggestion("Space weapons",20,"",0),
                     new CategorySuggestion("Laser weapons",10,"Earth weapons" ,2),
-                    new CategorySuggestion("Earth weapons",10,null,0)
+                    new CategorySuggestion("Earth weapons",10,"",0)
                 };
 
             var categoryRepository = Substitute.For<ICategoryRepository>();
@@ -58,6 +71,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // ------------
 
             _searcher = new SuggestionSearcher(categoryRepository, productRepository);
+            _searcher.LoadSuggestionsStore(LucenePath, true);
         }
 
         /// <summary>
@@ -107,7 +121,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategorySuggestion("Earth weapons",10,null,0)
+                    new CategorySuggestion("Earth weapons",10,"",0)
                 };
 
             // Act
@@ -123,7 +137,7 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategorySuggestion("Earth weapons",10,null,0)
+                    new CategorySuggestion("Earth weapons",10,"",0)
                 };
             // Act
             IEnumerable<ISuggestion> suggestions = _searcher.FindSuggestionsBySubstring("Arth").ToList();
@@ -138,8 +152,8 @@ namespace searchpd.Tests.IntegrationTests.Search
             // Arrange
             IEnumerable<ISuggestion> expectedSuggestions = new List<CategorySuggestion>
                 {
-                    new CategorySuggestion("Earth weapons",10,null,0),
-                    new CategorySuggestion("Space weapons",20,null,0),
+                    new CategorySuggestion("Earth weapons",10,"",0),
+                    new CategorySuggestion("Space weapons",20,"",0),
                     new CategorySuggestion("Laser weapons",10,"Earth weapons" ,2)
                 };
             

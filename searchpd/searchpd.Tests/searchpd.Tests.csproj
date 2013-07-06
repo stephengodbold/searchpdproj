@@ -122,6 +122,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IntegrationTests\Search\CategorySuggestionTests.cs" />
+    <Compile Include="IntegrationTests\Search\ProductSuggestionTests.cs" />
     <Compile Include="IntegrationTests\Search\ProductSearcherTests.cs" />
     <Compile Include="IntegrationTests\Search\SuggestionSearcherTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

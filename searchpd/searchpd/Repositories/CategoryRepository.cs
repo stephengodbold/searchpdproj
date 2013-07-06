@@ -30,8 +30,8 @@ namespace searchpd.Repositories
                             {
                                 CategoryName = c.Name,
                                 CategoryId = c.CategoryID,
-                                ParentName = (p.ParentID == 0) ? null : p.Name,
-                                ParentId = p.CategoryID
+                                ParentName = (p.ParentID == 0) ? "" : p.Name,
+                                ParentId = (p.ParentID == 0) ? 0 : p.CategoryID
                             }).ToList();
 
                 //TODO: Optimise this by using a left join instead

@@ -5,7 +5,7 @@ namespace searchpd.Models
     /// <summary>
     /// Represents a product suggestion.
     /// 
-    /// There are over 40,000 of these. Try to keep its memory footprint low.
+    /// There are over 40,000 of these. Try to keep its footprint low.
     /// </summary>
     public class ProductSuggestion : DisplayObject, ISuggestion
     {

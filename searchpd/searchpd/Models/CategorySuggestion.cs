@@ -20,11 +20,11 @@ namespace searchpd.Models
         public int CategoryId { get; set; } // Be sure never to update this after object creation, it is used as the hash code.
 
         // "Parent" refers to the parent category of this category.
-        // If there is no parent, ParentName will be null
+        // If there is no parent, ParentId will be 0
         public string ParentName { get; set; }
         public int ParentId { get; set; }
 
-        public bool HasParent { get { return (ParentName != null); } }
+        public bool HasParent { get { return (ParentId > 0); } }
 
         public string SortedName { get { return ParentName + " " + CategoryName; } }
 
@@ -36,8 +36,8 @@ namespace searchpd.Models
         {
             CategoryName = categoryName;
             CategoryId = categoryId;
-            ParentId = parentId;
             ParentName = parentName;
+            ParentId = parentId;
         }
 
         /// <summary>
@@ -81,7 +81,8 @@ namespace searchpd.Models
                 return true;
             }
 
-            return ((CategoryName == other.CategoryName) && (CategoryId == other.CategoryId) && (ParentName == other.ParentName) && (ParentId == other.ParentId));
+            return ((CategoryName == other.CategoryName) && (CategoryId == other.CategoryId) && 
+                (ParentName == other.ParentName) && (ParentId == other.ParentId));
         }
 
         public override int GetHashCode()

@@ -59,6 +59,11 @@ namespace searchpd.Models
         /// <returns></returns>
         public string HighlightedAnchor(string linkName, string subString, string urlFormat, params Object[] urlParams)
         {
+            if (string.IsNullOrWhiteSpace(linkName))
+            {
+                return "";
+            }
+
             string highlightedLinkName = SubstringHighlighted(linkName, subString);
             string url = string.Format(urlFormat, urlParams);
             string anchorHtml = string.Format(@"<a href=""{0}"">{1}</a>", url, highlightedLinkName);
