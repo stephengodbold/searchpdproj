@@ -20,6 +20,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "main", "main\main.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "main.Tests", "main.Tests\main.Tests.csproj", "{93C506F3-BB8C-4484-ACFD-7E789EBD1CF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutocompleteRefresh", "AutocompleteRefresh\AutocompleteRefresh.csproj", "{3BEA92F3-2FAF-44A7-9B25-F4FE5B6332F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mainRefresh", "mainRefresh\mainRefresh.csproj", "{449E3CD4-6583-41FC-9447-032F591921D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +54,14 @@ Global
 		{93C506F3-BB8C-4484-ACFD-7E789EBD1CF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93C506F3-BB8C-4484-ACFD-7E789EBD1CF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93C506F3-BB8C-4484-ACFD-7E789EBD1CF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BEA92F3-2FAF-44A7-9B25-F4FE5B6332F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BEA92F3-2FAF-44A7-9B25-F4FE5B6332F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BEA92F3-2FAF-44A7-9B25-F4FE5B6332F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BEA92F3-2FAF-44A7-9B25-F4FE5B6332F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{449E3CD4-6583-41FC-9447-032F591921D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{449E3CD4-6583-41FC-9447-032F591921D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{449E3CD4-6583-41FC-9447-032F591921D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{449E3CD4-6583-41FC-9447-032F591921D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
