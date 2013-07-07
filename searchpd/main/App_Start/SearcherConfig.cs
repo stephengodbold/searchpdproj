@@ -22,7 +22,7 @@ namespace main.App_Start
                 var constants = scope.Resolve<IConstants>();
 
                 var searcher = scope.Resolve<IProductSearcher>();
-                searcher.LoadProductStore(constants.AbsoluteLucenePath, constants.ProductCodeBoost, true);
+                searcher.LoadProductStore(constants.AbsoluteLucenePath, constants.ProductCodeBoost, constants.MinSimilarity, true);
             }
         }
     }

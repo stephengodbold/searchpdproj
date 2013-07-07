@@ -35,7 +35,7 @@ namespace searchpd.Tests.IntegrationTests.Search
 
             _searcher = new ProductSearcher(productRepository);
 
-            _searcher.LoadProductStore(_lucenePath, 5, false);
+            _searcher.LoadProductStore(_lucenePath, 100, 0.5f, false);
         }
 
         [TestMethod]

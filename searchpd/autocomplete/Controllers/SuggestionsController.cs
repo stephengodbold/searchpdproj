@@ -2,7 +2,6 @@
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
-using autocomplete.Models;
 using searchpd.Models;
 using searchpd.Search;
 

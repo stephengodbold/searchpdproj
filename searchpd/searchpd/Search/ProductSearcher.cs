@@ -5,23 +5,25 @@ using System.Linq;
 using searchpd.Models;
 using searchpd.Repositories;
 using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
+using searchpd.Search.Analyzers;
 
 namespace searchpd.Search
 {
     public interface IProductSearcher
     {
         IEnumerable<ProductSearchResult> FindProductsBySearchTerm(string searchTerm, int skip, int take, out int totalHits);
-        void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists);
+        void LoadProductStore(string absoluteLucenePath, float productCodeBoost, float minSimilarity, bool onlyIfNotExists);
     }
 
     public class ProductSearcher : LuceneSearcher, IProductSearcher
     {
         private readonly IProductRepository _productRepository;
+        private float _productCodeBoost = 1.0f;
+        private float _minSimilarity = 0.5f;
 
         public ProductSearcher(IProductRepository productRepository)
         {
@@ -58,19 +60,31 @@ namespace searchpd.Search
                 throw new ArgumentException(string.Format("skip = {0}. Should be >= 0", skip));
             }
 
-            // The StandardAnalyzer stores everything in lower case. So need to convert search term to lower case as well.
-            string searchTermLc = searchTerm.ToLower();
+            // All product codes and descriptions are stored in upper case. So need to convert search term to upper case as well.
+            string searchTermUc = LuceneEscape(searchTerm.ToUpper());
 
-            var booleanQuery = new BooleanQuery();
-            Query query1 = new WildcardQuery(new Term("ProductCode", "*" + searchTermLc + "*"));
-            Query query2 = new TermQuery(new Term("ProductDescription", searchTermLc));
+            Analyzer analyzer = new UpperCaseLetterOrDigitAnalyzer();
+
+            // FuzzyLikeThisQuery prepares a list of words that fuzzily match the given search term
+            // (added with AddTerms), and then only retains the top maxNumTerms by closeness.
+            // This allows you to ignore words that are "too" fuzzy.
+            //
+            // Do not set maxNumTerms too high, or you get an out of memory error.
+            const int maxNumTerms = 100;
+            var query1 = new FuzzyLikeThisQuery(maxNumTerms, analyzer);
+            query1.AddTerms(searchTermUc, "ProductDescription", _minSimilarity, 0);
+            
+            Query query2 = new WildcardQuery(new Term("ProductCode", "*" + searchTermUc + "*"));
+            query2.Boost = _productCodeBoost;
 
             // Making both fields SHOULD means only retrieve documents where at least 1 field matches
+            var booleanQuery = new BooleanQuery();
             booleanQuery.Add(query1, Occur.SHOULD);
             booleanQuery.Add(query2, Occur.SHOULD);
 
             // Get the searcher. Access _searcher only once while doing a search. Another request running 
-            // LoadProductStore could change this property. By accessing once, you are sure your searcher stays the same.
+            // LoadProductStore could change this property. By accessing once, you are sure your searcher stays the same
+            // during the search.
             var searcher = _searcher;
 
             // Actual search
@@ -90,7 +104,7 @@ namespace searchpd.Search
                         return new ProductSearchResult
                             {
                                 ProductId = int.Parse(doc.Get("ProductId")),
-                                ProductCode = doc.Get("ProductCode").ToUpper(),//TODO:######## dirty hack, to be removed when lower case filter introduced for product code
+                                ProductCode = doc.Get("ProductCode"),
                                 ProductDescription = doc.Get("ProductDescription")
                             };
                     });
@@ -111,14 +125,22 @@ namespace searchpd.Search
         /// Weigthing to give to product code relative to product description.
         /// If this is 5, than product code has 5 times the weight of product description.
         /// </param>
+        /// <param name="minSimilarity">
+        /// Minimum similarity used when fuzzy matching against product descriptions.
+        /// </param>
         /// <param name="onlyIfNotExists">
         /// If true, the index will only be created if there is no index at all (that is, no Lucene directory).
         /// If false, this will always create a new index.
         /// </param>
-        public void LoadProductStore(string absoluteLucenePath, float productCodeBoost, bool onlyIfNotExists)
+        public void LoadProductStore(string absoluteLucenePath, float productCodeBoost, float minSimilarity, bool onlyIfNotExists)
         {
-            LoadStore(absoluteLucenePath, onlyIfNotExists,
-                      (directory) => { LoadLuceneIndex(directory, productCodeBoost); });
+            // Setting boost on fields doesn't work when that field is used in a wildcard search,
+            // as is done for product boost. So store the boost and apply it when doing the query.
+
+            _productCodeBoost = productCodeBoost;
+            _minSimilarity = minSimilarity;
+
+            LoadStore(absoluteLucenePath, onlyIfNotExists, LoadLuceneIndex);
         }
 
         /// <summary>
@@ -127,17 +149,13 @@ namespace searchpd.Search
         /// <param name="directory">
         /// Directory where the index is located.
         /// </param>
-        /// <param name="productCodeBoost">
-        /// Weigthing to give to product code relative to product description.
-        /// If this is 5, than product code has 5 times the weight of product description.
-        /// </param>
-        private void LoadLuceneIndex(SimpleFSDirectory directory, float productCodeBoost)
+        private void LoadLuceneIndex(SimpleFSDirectory directory)
         {
-            // Create an analyzer that uses standard analyzer for all fields, but keyword analyzer for ProductCode
+            // Create an analyzer that uses UpperCaseLetterOrDigitAnalyzer for all fields, but UpperCaseKeywordAnalyzer for ProductCode
             // (because we want to regard product codes as 1 word).
-            var perFieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(new StandardAnalyzer(LuceneVersion));
-            perFieldAnalyzerWrapper.AddAnalyzer("ProductCode", new KeywordAnalyzer());
-            Analyzer analyzer = perFieldAnalyzerWrapper;
+
+            var analyzer = new PerFieldAnalyzerWrapper(new UpperCaseLetterOrDigitAnalyzer());
+            analyzer.AddAnalyzer("ProductCode", new UpperCaseKeywordAnalyzer());
 
             // -----------
             // Store products into Lucene.
@@ -153,10 +171,8 @@ namespace searchpd.Search
                     var doc = new Document();
                     doc.Add(new Field("ProductId", result.ProductId.ToString(CultureInfo.InvariantCulture), Field.Store.YES, Field.Index.NO));
 
-                    //  #####              var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES,
-                    var productCodeField = new Field("ProductCode", result.ProductCode.ToLower(), Field.Store.YES,
-                                                     Field.Index.ANALYZED);
-                    productCodeField.Boost = productCodeBoost;
+                    // Store field in index so it can be searched, but don't analyse it - just store as is.
+                    var productCodeField = new Field("ProductCode", result.ProductCode, Field.Store.YES, Field.Index.ANALYZED);
                     doc.Add(productCodeField);
 
                     doc.Add(new Field("ProductDescription", result.ProductDescription, Field.Store.YES, Field.Index.ANALYZED));

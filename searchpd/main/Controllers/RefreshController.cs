@@ -34,7 +34,7 @@ namespace main.Controllers
         [HttpPost]
         public string SearchResults()
         {
-            _searcher.LoadProductStore(_constants.AbsoluteLucenePath, _constants.ProductCodeBoost, false);
+            _searcher.LoadProductStore(_constants.AbsoluteLucenePath, _constants.ProductCodeBoost, _constants.MinSimilarity, false);
 
             return "Product search results updated";
         }

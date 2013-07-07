@@ -1,16 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Web;
-using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
-using Lucene.Net.Documents;
-using Lucene.Net.Index;
+using System.Text;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
-using searchpd.Models;
 using Version = Lucene.Net.Util.Version;
 
 namespace searchpd.Search
@@ -68,5 +60,30 @@ namespace searchpd.Search
             _searcher = new IndexSearcher(directory, true);
         }
 
+        /// <summary>
+        /// Escapes all Lucene special characters in a search term.
+        /// 
+        /// Direct copy of the Java method QueryParserUtil.escape (couldn't find the .Net version).
+        /// </summary>
+        /// <param name="searchTerm"></param>
+        /// <returns></returns>
+        protected string LuceneEscape(string searchTerm)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < searchTerm.Length; i++) 
+            {
+                char c = searchTerm[i];
+                // These characters are part of the query syntax and must be escaped
+                if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')'
+                    || c == ':' || c == '^' || c == '[' || c == ']' || c == '\"'
+                    || c == '{' || c == '}' || c == '~' || c == '*' || c == '?'
+                    || c == '|' || c == '&') 
+                {
+                    sb.Append('\\');
+                }
+                sb.Append(c);
+            }
+            return sb.ToString();
+        }
     }
 }

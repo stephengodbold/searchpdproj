@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace searchpd.Models
+﻿namespace searchpd.Models
 {
     /// <summary>
     /// Represents a single result of a product search.

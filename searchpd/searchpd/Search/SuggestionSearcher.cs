@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Web;
 using Lucene.Net.Analysis;
-using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using searchpd.Models;
 using searchpd.Repositories;
-using Version = Lucene.Net.Util.Version;
 
 namespace searchpd.Search
 {
@@ -52,10 +47,10 @@ namespace searchpd.Search
                 return new List<CategorySuggestion>();
             }
 
-            // The product codes and category names have been stored in lower case. So need to convert search term to lower case as well.
-            string searchTermLc = searchTerm.ToLower();
+            // The product codes and category names have been stored in upper case. So need to convert search term to upper case as well.
+            string searchTermUc = LuceneEscape(searchTerm.ToUpper());
 
-            Query query1 = new WildcardQuery(new Term("LcName", "*" + searchTermLc + "*"));
+            Query query1 = new WildcardQuery(new Term("UcName", "*" + searchTermUc + "*"));
 
             // Get the searcher. Access _searcher only once while doing a search. Another request running 
             // LoadProductStore could change this property. By accessing once, you are sure your searcher stays the same.
@@ -117,11 +112,11 @@ namespace searchpd.Search
 
                 foreach (var productSuggestion in productSuggestions)
                 {
-                    // Storing all names in lower case, so we can do case insensitive search easily
+                    // Storing all names in upper case, so we can do case insensitive search easily
 
                     var doc = new Document();
                     doc.Add(new Field("Object", productSuggestion.ToString(), Field.Store.YES, Field.Index.NO));
-                    doc.Add(new Field("LcName", productSuggestion.ProductCode.ToLower(), Field.Store.NO, Field.Index.ANALYZED));
+                    doc.Add(new Field("UcName", productSuggestion.ProductCode.ToUpper(), Field.Store.NO, Field.Index.NOT_ANALYZED));
                     doc.Add(new Field("SuggestionType", ProductSuggestionCode , Field.Store.YES, Field.Index.NO));
                     writer.AddDocument(doc);
                 }
@@ -132,7 +127,7 @@ namespace searchpd.Search
                 {
                     var doc = new Document();
                     doc.Add(new Field("Object", categorySuggestion.ToString(), Field.Store.YES, Field.Index.NO));
-                    doc.Add(new Field("LcName", categorySuggestion.CategoryName.ToLower(), Field.Store.NO, Field.Index.ANALYZED));
+                    doc.Add(new Field("UcName", categorySuggestion.CategoryName.ToUpper(), Field.Store.NO, Field.Index.NOT_ANALYZED));
                     doc.Add(new Field("SuggestionType", CategorySuggestionCode, Field.Store.YES, Field.Index.NO));
                     writer.AddDocument(doc);
                 }

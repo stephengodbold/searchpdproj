@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using autocomplete.Models;
-using searchpd.Models;
 using searchpd.Search;
 
 namespace autocomplete.Controllers

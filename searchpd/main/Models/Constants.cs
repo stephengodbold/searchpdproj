@@ -11,6 +11,7 @@ namespace main.Models
         string LucenePath { get; }
         string AbsoluteLucenePath { get; }
         float ProductCodeBoost { get; }
+        float MinSimilarity { get; }
         int NbrResultsPerPage { get; }
         string AutocompleteRefreshPassword { get; }
     }
@@ -44,11 +45,14 @@ namespace main.Models
             }
         }
 
-        // Boosting of product codes relative to product descriptions during product searches.
-        // If this is 5, than matches on product codes are 5 times more important than matches in product descriptions.
         public float ProductCodeBoost
         {
             get { return float.Parse(ConfigurationManager.AppSettings["ProductCodeBoost"]); }
+        }
+
+        public float MinSimilarity
+        {
+            get { return float.Parse(ConfigurationManager.AppSettings["MinSimilarity"]); }
         }
 
         public int NbrResultsPerPage

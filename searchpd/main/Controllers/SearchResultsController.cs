@@ -43,7 +43,7 @@ namespace main.Controllers
             string searchTerm = q;
 
             int totalHits;
-            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm(searchTerm, skip, _constants.NbrResultsPerPage, out totalHits);
+            IEnumerable<ProductSearchResult> results = _searcher.FindProductsBySearchTerm(searchTerm, skip, _constants.NbrResultsPerPage, out totalHits).ToList();
 
             if (!results.Any())
             {
